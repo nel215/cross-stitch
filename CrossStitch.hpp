@@ -66,11 +66,12 @@ vector<P> extract_cells_with_same_color(const vector<string> &pattern, char c){
     return cells;
 }
 
-vector<Stitch> extract_stitches(const vector<string> &pattern, char c){
+vector<Stitch> convert_cells_to_stitches(const vector<P> &cells){
     vector<Stitch> stitches;
 
-    REP(y, pattern.size())REP(x, pattern.size()){
-        if(pattern[y][x]!=c)continue;
+    REP(i, cells.size()){
+        int y = cells[i].y;
+        int x = cells[i].x;
         stitches.push_back(Stitch(P(y+0, x+0), P(y+1, x+1)));
         stitches.push_back(Stitch(P(y+0, x+1), P(y+1, x+0)));
     }

@@ -13,10 +13,10 @@ void test_extract_cells_with_same_color(){
 }
 
 void test_extract_stitches(){
-    vector<string> p;
-    p.push_back("a");
+    vector<P> p;
+    p.push_back(P(0, 0));
 
-    vector<Stitch> stitches = extract_stitches(p, 'a');
+    vector<Stitch> stitches = convert_cells_to_stitches(p);
     assert(stitches.size() == 2);
 }
 
