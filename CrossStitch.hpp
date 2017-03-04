@@ -103,7 +103,6 @@ protected:
         int ps = this->pattern_size;
         return y >= 0 && x >=0 && y < ps && x < ps;
     }
-public:
     vector<vector<P> > create_nngraph_with_same_color(const vector<string> &pattern, char c){
         int thres = 2;
         int ps = this->pattern_size;
@@ -125,6 +124,7 @@ public:
         }
         return nngraph;
     }
+public:
 
     vector<string> embroider(vector<string> pattern) {
         this->set_pattern(pattern);
