@@ -36,22 +36,32 @@ string to_string(int r, int c){
     return oss.str();
 }
 
+struct P{
+    int y, x;
+    P(int _y, int _x){
+        y = _y;
+        x = _x;
+    }
+    P(){
+        P(0, 0);
+    }
+};
+
 struct Stitch{
-    int from, to;
-    Stitch(int f, int t){
+    P from, to;
+    Stitch(P f, P t){
         from = f;
         to = t;
     }
 };
 
 vector<Stitch> extract_stitches(const vector<string> &pattern, char c){
-    int T = pattern.size() + 1;
     vector<Stitch> stitches;
 
     REP(y, pattern.size())REP(x, pattern.size()){
         if(pattern[y][x]!=c)continue;
-        stitches.push_back(Stitch((y+0)*T + (x+0), (y+1)*T + (x+1)));
-        stitches.push_back(Stitch((y+0)*T + (x+1), (y+1)*T + (x+0)));
+        stitches.push_back(Stitch(P(y+0, x+0), P(y+1, x+1)));
+        stitches.push_back(Stitch(P(y+0, x+1), P(y+1, x+0)));
     }
 
     return stitches;
