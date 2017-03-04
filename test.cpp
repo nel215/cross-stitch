@@ -34,6 +34,9 @@ public:
         assert(nngraph[0].size() == 1);
         assert(nngraph[4].size() == 2);
     }
+    void test_extract_next_states(){
+        State s;
+    }
 };
 
 int main(){
@@ -41,6 +44,7 @@ int main(){
     test_extract_stitches();
     TestingCrossStitch tcs;
     tcs.test_create_nngraph_with_same_color();
+    tcs.test_extract_next_states();
     cout << "all tests succeeded." << endl;
     return 0;
 }

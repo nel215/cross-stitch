@@ -36,6 +36,11 @@ string to_string(int r, int c){
     return oss.str();
 }
 
+struct State{
+    int y, x;
+    vector<int> history;
+};
+
 struct P{
     int y, x;
     P(int _y, int _x){
