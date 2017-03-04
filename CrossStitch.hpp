@@ -17,6 +17,10 @@
 #include <ctime>
 #include <sys/time.h>
 
+#define REP(i,x) for(int i=0 ; i<(int)(x) ; i++)
+#define ALL(x) (x).begin(),(x).end()
+#define LL long long
+
 using namespace std;
 
 const double TIME_LIMIT = 7.5;
@@ -30,6 +34,27 @@ string to_string(int r, int c){
     ostringstream oss;
     oss << r << " " << c;
     return oss.str();
+}
+
+struct Stitch{
+    int from, to;
+    Stitch(int f, int t){
+        from = f;
+        to = t;
+    }
+};
+
+vector<Stitch> extract_stitches(const vector<string> &pattern, char c){
+    int T = pattern.size() + 1;
+    vector<Stitch> stitches;
+
+    REP(y, pattern.size())REP(x, pattern.size()){
+        if(pattern[y][x]!=c)continue;
+        stitches.push_back(Stitch((y+0)*T + (x+0), (y+1)*T + (x+1)));
+        stitches.push_back(Stitch((y+0)*T + (x+1), (y+1)*T + (x+0)));
+    }
+
+    return stitches;
 }
 
 class CrossStitch {
