@@ -93,8 +93,10 @@ bool include(int ay, int ax, int by, int bx, int thres){
 
 class CrossStitch {
 protected:
-    int pattern_size; // pattern_size
-    void set_pattern(const vector<string> &pattern){
+    vector<string> pattern;
+    int pattern_size;
+    void set_pattern(vector<string> pattern){
+        this->pattern = pattern;
         this->pattern_size = pattern.size();
     }
     bool is_valid_position(int y, int x){
