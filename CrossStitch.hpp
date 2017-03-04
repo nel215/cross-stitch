@@ -79,9 +79,53 @@ vector<Stitch> convert_cells_to_stitches(const vector<P> &cells){
     return stitches;
 }
 
+int sq_dist(int ay, int ax, int by, int bx){
+    int dy = ay - by;
+    int dx = ax - bx;
+    return dy*dy + dx*dx;
+}
+
+bool include(int ay, int ax, int by, int bx, int thres){
+    int sd = sq_dist(ay, ax, by, bx);
+    return sd <= thres*thres;
+}
+
+
 class CrossStitch {
+protected:
+    int pattern_size; // pattern_size
+    void set_pattern(const vector<string> &pattern){
+        this->pattern_size = pattern.size();
+    }
+    bool is_valid_position(int y, int x){
+        int ps = this->pattern_size;
+        return y >= 0 && x >=0 && y < ps && x < ps;
+    }
 public:
+    vector<vector<P> > create_nngraph_with_same_color(const vector<string> &pattern, char c){
+        int thres = 2;
+        int ps = this->pattern_size;
+
+        vector<vector<P> > nngraph(ps*ps, vector<P>());
+        REP(y, ps)REP(x, ps){
+            if(pattern[y][x]!=c)continue;
+            REP(i, 5)REP(j, 5){
+                int ty = y - 2 + i;
+                int tx = x - 2 + j;
+                if(ty==y && tx==x)continue;
+                if(!is_valid_position(ty, tx))continue;
+                if(!include(y, x, ty, tx, thres))continue;
+                if(pattern[ty][tx]!=c)continue;
+
+                int from = y*ps + x;
+                nngraph[from].push_back(P(ty, tx));
+            }
+        }
+        return nngraph;
+    }
+
     vector<string> embroider(vector<string> pattern) {
+        this->set_pattern(pattern);
         vector<string> ret;
         int S = pattern.size();
         // for each color, for each cell (r, c) do two stitches (r+1, c)-(r, c+1)-(r+1, c+1)-(r, c)

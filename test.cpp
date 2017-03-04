@@ -20,9 +20,27 @@ void test_extract_stitches(){
     assert(stitches.size() == 2);
 }
 
+class TestingCrossStitch : public CrossStitch {
+public:
+    void test_create_nngraph_with_same_color(){
+        vector<string> p;
+        p.push_back("a..");
+        p.push_back(".a.");
+        p.push_back("..a");
+        this->set_pattern(p);
+
+        vector<vector<P> > nngraph = this->create_nngraph_with_same_color(p, 'a');
+        assert(nngraph.size() == 9);
+        assert(nngraph[0].size() == 1);
+        assert(nngraph[4].size() == 2);
+    }
+};
+
 int main(){
     test_extract_cells_with_same_color();
     test_extract_stitches();
+    TestingCrossStitch tcs;
+    tcs.test_create_nngraph_with_same_color();
     cout << "all tests succeeded." << endl;
     return 0;
 }
