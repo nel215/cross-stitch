@@ -55,6 +55,17 @@ struct Stitch{
     }
 };
 
+vector<P> extract_cells_with_same_color(const vector<string> &pattern, char c){
+    vector<P> cells;
+
+    REP(y, pattern.size())REP(x, pattern.size()){
+        if(pattern[y][x]!=c)continue;
+        cells.push_back(P(y, x));
+    }
+
+    return cells;
+}
+
 vector<Stitch> extract_stitches(const vector<string> &pattern, char c){
     vector<Stitch> stitches;
 
