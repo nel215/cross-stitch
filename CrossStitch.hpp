@@ -30,6 +30,11 @@ double GetTime(){
 	return tv.tv_sec + tv.tv_usec*1e-6;
 }
 
+// const
+// cross type
+const LTRB = 0; // left top to right bottom
+const LBRT = 1; // left bottom to right top
+
 string to_string(int r, int c){
     ostringstream oss;
     oss << r << " " << c;
