@@ -43,9 +43,14 @@ string to_string(int r, int c){
 
 typedef vector<vector<int> > NNGraph;
 
-struct State{
-    int y, x;
-    vector<int> history;
+class State{
+    int pos;
+    State *prev;
+public:
+    State(int p){
+        this->pos = p;
+        this->prev = NULL;
+    }
 };
 
 struct P{
