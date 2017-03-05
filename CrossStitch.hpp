@@ -44,18 +44,20 @@ string to_string(int r, int c){
 typedef vector<vector<int> > NNGraph;
 
 class State{
-    void init(int pos, State *prev){
+    void init(int pos, int score, State *prev){
         this->pos = pos;
+        this->score = score;
         this->prev = prev;
     }
 public:
     int pos;
+    int score;
     State *prev;
     State(int pos){
-        this->init(pos, NULL);
+        this->init(pos, 0, NULL);
     }
-    State(int pos, State *prev){
-        this->init(pos, prev);
+    State(int pos, int score, State *prev){
+        this->init(pos, score, prev);
     }
 };
 
@@ -125,6 +127,14 @@ protected:
         int ps = this->pattern_size;
         return y >= 0 && x >=0 && y < ps && x < ps;
     }
+    int sq_dist_of_pos(int ap, int bp){
+        int ps = this->pattern_size;
+        int ay = ap / ps;
+        int ax = ap % ps;
+        int by = bp / ps;
+        int bx = bp % ps;
+        return sq_dist(ay, ax, by, bx);
+    }
     NNGraph create_nngraph_with_same_color(const vector<string> &pattern, char c){
         // TODO: bidirectional
         int thres = 2;
@@ -166,7 +176,8 @@ protected:
         REP(i, g[current_state->pos].size()){
             int to = g[current_state->pos][i];
             if(used[to])continue;
-            State *next_state = new State(to, current_state);
+            int score = current_state->score + this->sq_dist_of_pos(current_state->pos, to);
+            State *next_state = new State(to, score, current_state);
             next_states.push_back(next_state);
         }
 
