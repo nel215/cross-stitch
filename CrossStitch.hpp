@@ -113,11 +113,12 @@ protected:
         int ps = this->pattern_size;
         return y >= 0 && x >=0 && y < ps && x < ps;
     }
-    vector<vector<P> > create_nngraph_with_same_color(const vector<string> &pattern, char c){
+    vector<vector<int> > create_nngraph_with_same_color(const vector<string> &pattern, char c){
+        // TODO: bidirectional
         int thres = 2;
         int ps = this->pattern_size;
 
-        vector<vector<P> > nngraph(ps*ps, vector<P>());
+        vector<vector<int> > nngraph(ps*ps, vector<int>());
         REP(y, ps)REP(x, ps){
             if(pattern[y][x]!=c)continue;
             REP(i, 5)REP(j, 5){
@@ -129,7 +130,8 @@ protected:
                 if(pattern[ty][tx]!=c)continue;
 
                 int from = y*ps + x;
-                nngraph[from].push_back(P(ty, tx));
+                int to = ty*ps + tx;
+                nngraph[from].push_back(to);
             }
         }
         return nngraph;

@@ -29,7 +29,7 @@ public:
         p.push_back("..a");
         this->set_pattern(p);
 
-        vector<vector<P> > nngraph = this->create_nngraph_with_same_color(p, 'a');
+        vector<vector<int> > nngraph = this->create_nngraph_with_same_color(p, 'a');
         assert(nngraph.size() == 9);
         assert(nngraph[0].size() == 1);
         assert(nngraph[4].size() == 2);
