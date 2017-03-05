@@ -102,7 +102,6 @@ bool include(int ay, int ax, int by, int bx, int thres){
     return sd <= thres*thres;
 }
 
-
 class CrossStitch {
 protected:
     vector<string> pattern;
