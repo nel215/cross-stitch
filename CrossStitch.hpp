@@ -136,25 +136,46 @@ protected:
         return sq_dist(ay, ax, by, bx);
     }
     NNGraph create_nngraph_with_same_color(char c){
-        // TODO: bidirectional
-        int thres = 2;
         int ps = this->pattern_size;
 
         NNGraph nngraph(ps*ps, vector<int>());
         REP(y, ps)REP(x, ps){
             if(this->pattern[y][x]!=c)continue;
-            REP(i, 5)REP(j, 5){
-                int ty = y - 2 + i;
-                int tx = x - 2 + j;
+            int from = y*ps + x;
+            vector<pair<int, int> > cand;
+            REP(i, 3)REP(j, 3){
+                int ty = y - 1 + i;
+                int tx = x - 1 + j;
                 if(ty==y && tx==x)continue;
                 if(!is_valid_position(ty, tx))continue;
-                if(!include(y, x, ty, tx, thres))continue;
                 if(pattern[ty][tx]!=c)continue;
+                int sd = sq_dist(y, x, ty, tx);
 
-                int from = y*ps + x;
                 int to = ty*ps + tx;
-                nngraph[from].push_back(to);
+                cand.push_back(make_pair(sd, to));
             }
+            if(cand.size()<4){ // TODO: parameterize?
+                cand.clear();
+                REP(ty, ps)REP(tx, ps){
+                    if(ty==y && tx==x)continue;
+                    if(pattern[ty][tx]!=c)continue;
+                    int sd = sq_dist(y, x, ty, tx);
+                    int to = ty*ps + tx;
+                    cand.push_back(make_pair(sd, to));
+                }
+            }
+            sort(ALL(cand));
+            REP(i, min(4, (int)cand.size())){
+                int to = cand[i].second;
+                nngraph[from].push_back(to);
+                nngraph[to].push_back(from);
+            }
+        }
+
+        // unique
+        REP(i, nngraph.size()){
+            sort(ALL(nngraph[i]));
+            nngraph[i].erase(unique(ALL(nngraph[i])), nngraph[i].end());
         }
         return nngraph;
     }

@@ -24,15 +24,16 @@ class TestingCrossStitch : public CrossStitch {
 public:
     void test_create_nngraph_with_same_color(){
         vector<string> p;
-        p.push_back("a..");
-        p.push_back(".a.");
-        p.push_back("..a");
+        p.push_back(".a..");
+        p.push_back("aaa.");
+        p.push_back(".a..");
+        p.push_back("...a");
         this->set_pattern(p);
 
         NNGraph nngraph = this->create_nngraph_with_same_color('a');
-        assert(nngraph.size() == 9);
-        assert(nngraph[0].size() == 1);
-        assert(nngraph[4].size() == 2);
+        assert(nngraph.size() == 16);
+        assert(nngraph[5].size() == 5);
+        assert(nngraph[15].size() == 4);
     }
     void test_extract_next_states(){
         vector<string> p;
