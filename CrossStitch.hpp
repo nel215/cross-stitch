@@ -135,14 +135,14 @@ protected:
         int bx = bp % ps;
         return sq_dist(ay, ax, by, bx);
     }
-    NNGraph create_nngraph_with_same_color(const vector<string> &pattern, char c){
+    NNGraph create_nngraph_with_same_color(char c){
         // TODO: bidirectional
         int thres = 2;
         int ps = this->pattern_size;
 
         NNGraph nngraph(ps*ps, vector<int>());
         REP(y, ps)REP(x, ps){
-            if(pattern[y][x]!=c)continue;
+            if(this->pattern[y][x]!=c)continue;
             REP(i, 5)REP(j, 5){
                 int ty = y - 2 + i;
                 int tx = x - 2 + j;
