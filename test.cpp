@@ -51,6 +51,18 @@ public:
         assert(next_states[0]->pos == 2);
         assert(next_states[0]->score == 3);
     }
+
+    void test_create_initial_states(){
+        NNGraph g(4);
+        g[0].push_back(1);
+        g[0].push_back(2);
+        g[1].push_back(2);
+
+        vector<State*> initial_states = this->create_initial_states(g);
+        assert(initial_states.size() == 2);
+        assert(initial_states[0]->pos == 1);
+        assert(initial_states[0]->score == 0);
+    }
 };
 
 int main(){
@@ -59,6 +71,7 @@ int main(){
     TestingCrossStitch tcs;
     tcs.test_create_nngraph_with_same_color();
     tcs.test_extract_next_states();
+    tcs.test_create_initial_states();
     cout << "all tests succeeded." << endl;
     return 0;
 }

@@ -207,6 +207,20 @@ protected:
 
         return next_states;
     }
+    vector<State*> create_initial_states(const NNGraph &g){
+        vector<pair<int, int> > cand;
+        REP(i, g.size()){
+            if(g[i].size()==0)continue;
+            cand.push_back(make_pair(g[i].size(), i));
+        }
+        sort(ALL(cand));
+        vector<State*> res;
+        REP(i, cand.size()){
+            int p = cand[i].second;
+            res.push_back(new State(p));
+        }
+        return res;
+    }
 public:
 
     vector<string> embroider(vector<string> pattern) {
