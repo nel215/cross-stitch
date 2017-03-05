@@ -23,8 +23,7 @@
 
 using namespace std;
 
-const double TIME_LIMIT = 7.5;
-double GetTime(){
+double get_time(){
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	return tv.tv_sec + tv.tv_usec*1e-6;
