@@ -7,5 +7,5 @@ test: build-test
 # build
 build:
 	g++ -O2 -Wall CrossStitch.cpp
-run:
+run: build
 	java -jar ./tester.jar -exec ./a.out -seed 1 -novis
