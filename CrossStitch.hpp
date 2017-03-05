@@ -129,10 +129,19 @@ bool include(int ay, int ax, int by, int bx, int thres){
 class CrossStitch {
 protected:
     vector<string> pattern;
+    vector<char> alphabet;
     int pattern_size;
     void set_pattern(vector<string> pattern){
         this->pattern = pattern;
         this->pattern_size = pattern.size();
+        this->alphabet = vector<char>();
+        int ps = this->pattern_size;
+        REP(y, ps)REP(x, ps){
+            if(pattern[y][x]=='.')continue;
+            alphabet.push_back(pattern[y][x]);
+        }
+        sort(ALL(alphabet));
+        alphabet.erase(unique(ALL(alphabet)), alphabet.end());
     }
     bool is_valid_position(int y, int x){
         int ps = this->pattern_size;
