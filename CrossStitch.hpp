@@ -41,6 +41,8 @@ string to_string(int r, int c){
     return oss.str();
 }
 
+typedef vector<vector<int> > NNGraph;
+
 struct State{
     int y, x;
     vector<int> history;
@@ -113,12 +115,12 @@ protected:
         int ps = this->pattern_size;
         return y >= 0 && x >=0 && y < ps && x < ps;
     }
-    vector<vector<int> > create_nngraph_with_same_color(const vector<string> &pattern, char c){
+    NNGraph create_nngraph_with_same_color(const vector<string> &pattern, char c){
         // TODO: bidirectional
         int thres = 2;
         int ps = this->pattern_size;
 
-        vector<vector<int> > nngraph(ps*ps, vector<int>());
+        NNGraph nngraph(ps*ps, vector<int>());
         REP(y, ps)REP(x, ps){
             if(pattern[y][x]!=c)continue;
             REP(i, 5)REP(j, 5){
