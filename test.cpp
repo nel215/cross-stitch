@@ -63,6 +63,23 @@ public:
         assert(initial_states[0]->pos == 1);
         assert(initial_states[0]->score == 0);
     }
+
+    void test_search_min_path(){
+        double start_time = get_time();
+        vector<string> p;
+        p.push_back(".a..");
+        p.push_back("aaa.");
+        p.push_back(".a..");
+        p.push_back("...a");
+        this->set_pattern(p);
+
+        NNGraph g = this->create_nngraph_with_same_color('a');
+        vector<State*> initial_states;
+        initial_states.push_back(new State(15));
+        initial_states.push_back(new State(1));
+        vector<int> min_path = this->search_min_path(initial_states, start_time+1.0, g);
+        assert(min_path.size()==6);
+    }
 };
 
 int main(){
@@ -72,6 +89,7 @@ int main(){
     tcs.test_create_nngraph_with_same_color();
     tcs.test_extract_next_states();
     tcs.test_create_initial_states();
+    tcs.test_search_min_path();
     cout << "all tests succeeded." << endl;
     return 0;
 }

@@ -63,6 +63,15 @@ public:
     }
 };
 
+class StateComparator{
+public:
+    bool operator()(const State *a, const State *b){
+        return a->score > b->score;
+    }
+};
+
+typedef priority_queue<State*, vector<State*>, StateComparator> StateQueue;
+
 struct P{
     int y, x;
     P(int _y, int _x){
@@ -218,6 +227,38 @@ protected:
             int p = cand[i].second;
             res.push_back(new State(p));
         }
+        return res;
+    }
+    vector<int> search_min_path(vector<State*> initial_states, double limit, const NNGraph &g){
+        int node_size = 0;
+        REP(i, g.size())if(g[i].size()>0)node_size++;
+
+        vector<StateQueue> beam(node_size, StateQueue());
+        int init_idx = 0;
+        while(get_time() < limit){
+            if(init_idx < (int)initial_states.size()){
+                beam[0].push(initial_states[init_idx++]);
+            }
+            REP(b, node_size-1){
+                if(beam[b].empty())continue;
+                State *s = beam[b].top();
+                beam[b].pop();
+                // cout << "b: " << b << ", ";
+                // s->debug();
+                vector<State*> next_states = this->extract_next_states(s, g);
+                REP(j, next_states.size()){
+                    beam[b+1].push(next_states[j]);
+                }
+            }
+        }
+
+        State *ptr = beam[node_size-1].top();
+        vector<int> res;
+        while(ptr!=NULL){
+            res.push_back(ptr->pos);
+            ptr = ptr->prev;
+        }
+        reverse(ALL(res));
         return res;
     }
 public:
