@@ -35,7 +35,17 @@ public:
         assert(nngraph[4].size() == 2);
     }
     void test_extract_next_states(){
-        State s;
+        vector<string> p;
+        p.push_back("aa");
+        p.push_back("..");
+        this->set_pattern(p);
+
+        NNGraph g(4);
+        g[0].push_back(1);
+        State s(0);
+        vector<State*> next_states = this->extract_next_states(&s, g);
+        assert(next_states.size() == 1);
+        assert(next_states[0]->pos == 1);
     }
 };
 

@@ -44,12 +44,18 @@ string to_string(int r, int c){
 typedef vector<vector<int> > NNGraph;
 
 class State{
+    void init(int pos, State *prev){
+        this->pos = pos;
+        this->prev = prev;
+    }
+public:
     int pos;
     State *prev;
-public:
-    State(int p){
-        this->pos = p;
-        this->prev = NULL;
+    State(int pos){
+        this->init(pos, NULL);
+    }
+    State(int pos, State *prev){
+        this->init(pos, prev);
     }
 };
 
@@ -141,6 +147,30 @@ protected:
             }
         }
         return nngraph;
+    }
+    vector<State*> extract_next_states(State *current_state, const NNGraph &g){
+        // TODO: hash
+        int ps = this->pattern_size;
+        vector<int> used(ps*ps);
+
+        // recover
+        State *ptr = current_state;
+        while(ptr!=NULL){
+            int pos = ptr->pos;
+            used[pos] = 1;
+            ptr = ptr->prev;
+        }
+
+        // search
+        vector<State*> next_states;
+        REP(i, g[current_state->pos].size()){
+            int to = g[current_state->pos][i];
+            if(used[to])continue;
+            State *next_state = new State(to, current_state);
+            next_states.push_back(next_state);
+        }
+
+        return next_states;
     }
 public:
 
