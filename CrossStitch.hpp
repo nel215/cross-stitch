@@ -32,8 +32,8 @@ double GetTime(){
 
 // const
 // cross type
-const LTRB = 0; // left top to right bottom
-const LBRT = 1; // left bottom to right top
+const int LTRB = 0; // left top to right bottom
+const int LBRT = 1; // left bottom to right top
 
 string to_string(int r, int c){
     ostringstream oss;
