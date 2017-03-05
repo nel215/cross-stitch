@@ -59,6 +59,9 @@ public:
     State(int pos, int score, State *prev){
         this->init(pos, score, prev);
     }
+    void debug(){
+        cerr << "pos: " << pos << ", score: " << score << endl;
+    }
 };
 
 struct P{
