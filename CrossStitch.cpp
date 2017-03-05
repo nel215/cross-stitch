@@ -14,8 +14,9 @@ int main() {
     CrossStitch cs;
     vector<string> ret = cs.embroider(pattern);
     cout << ret.size() << endl;
-    for (int i = 0; i < (int)ret.size(); ++i)
+    for (int i = 0; i < (int)ret.size(); ++i){
         cout << ret[i] << endl;
+    }
 	fflush(stdout);
 }
 
