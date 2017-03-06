@@ -201,7 +201,7 @@ protected:
         }
         return nngraph;
     }
-    vector<State*> extract_next_states(State *current_state, const NNGraph &g){
+    vector<State*> extract_next_states(State *current_state, const NNGraph &g, const vector<int> &cells){
         // TODO: hash
         int ps = this->pattern_size;
         vector<int> used(ps*ps);
@@ -218,6 +218,15 @@ protected:
         vector<State*> next_states;
         REP(i, g[current_state->pos].size()){
             int to = g[current_state->pos][i];
+            if(used[to])continue;
+            int score = current_state->score + this->sq_dist_of_pos(current_state->pos, to);
+            State *next_state = new State(to, score, current_state);
+            next_states.push_back(next_state);
+        }
+        if(next_states.size()>0)return next_states;
+
+        REP(i, cells.size()){
+            int to = cells[i];
             if(used[to])continue;
             int score = current_state->score + this->sq_dist_of_pos(current_state->pos, to);
             State *next_state = new State(to, score, current_state);
@@ -240,7 +249,7 @@ protected:
         }
         return res;
     }
-    vector<int> search_min_path(vector<State*> initial_states, double limit, const NNGraph &g){
+    vector<int> search_min_path(vector<State*> initial_states, double limit, const NNGraph &g, const vector<int> &cells){
         int node_size = 0;
         REP(i, g.size())if(g[i].size()>0)node_size++;
 
@@ -250,18 +259,24 @@ protected:
             if(init_idx < (int)initial_states.size()){
                 beam[0].push(initial_states[init_idx++]);
             }
-            REP(b, node_size-1){
-                if(beam[b].empty())continue;
+            int b=0;
+            for(;;){
+                if(b==node_size-1)break;
+                if(beam[b].empty())break;
                 State *s = beam[b].top();
                 beam[b].pop();
-                // cout << "b: " << b << ", ";
-                // s->debug();
-                vector<State*> next_states = this->extract_next_states(s, g);
+                //cerr << "b: " << b << ", ";
+                //s->debug();
+                vector<State*> next_states = this->extract_next_states(s, g, cells);
+                if(next_states.size()==0)continue;
                 REP(j, next_states.size()){
+                    //next_states[j]->debug();
                     beam[b+1].push(next_states[j]);
                 }
+                b++;
             }
         }
+        //cerr << node_size << beam[node_size-1].size() << endl;
 
         State *ptr = beam[node_size-1].top();
         vector<int> res;
@@ -283,10 +298,12 @@ public:
         double each_time = 8.0 / alphabet.size();
         REP(i, alphabet.size()){
             char c = alphabet[i];
+            cerr << "start search: " << c << endl;
             NNGraph g = create_nngraph_with_same_color(c);
+            vector<int> cells = extract_cells_with_same_color(c);
             vector<State*> initial_states = create_initial_states(g);
             double limit = start_time + each_time*(i+1);
-            vector<int> min_path = search_min_path(initial_states, limit, g);
+            vector<int> min_path = search_min_path(initial_states, limit, g, cells);
             ret.push_back(string(1, c));
             REP(j, min_path.size()){
                 int p = min_path[j];

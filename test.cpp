@@ -47,7 +47,7 @@ public:
         g[1].push_back(2);
         State s1(0);
         State s2(1, 1, &s1);
-        vector<State*> next_states = this->extract_next_states(&s2, g);
+        vector<State*> next_states = this->extract_next_states(&s2, g, vector<int>());
         assert(next_states.size() == 1);
         assert(next_states[0]->pos == 2);
         assert(next_states[0]->score == 3);
@@ -78,7 +78,7 @@ public:
         vector<State*> initial_states;
         initial_states.push_back(new State(15));
         initial_states.push_back(new State(1));
-        vector<int> min_path = this->search_min_path(initial_states, start_time+1.0, g);
+        vector<int> min_path = this->search_min_path(initial_states, start_time+1.0, g, vector<int>());
         assert(min_path.size()==6);
     }
 };
