@@ -273,24 +273,36 @@ protected:
 public:
 
     vector<string> embroider(vector<string> pattern) {
+        double start_time = get_time();
         this->set_pattern(pattern);
         vector<string> ret;
-        int S = pattern.size();
+        int ps = this->pattern_size;
         // for each color, for each cell (r, c) do two stitches (r+1, c)-(r, c+1)-(r+1, c+1)-(r, c)
-        for (char col = 'a'; col <= 'z'; ++col) {
-            bool first = true;
-            for (int r = 0; r < S; ++r)
-            for (int c = 0; c < S; ++c)
-                if (pattern[r][c] == col) {
-                    if (first) {
-                        ret.push_back(string(1, col));
-                        first = false;
-                    }
-                    ret.push_back(to_string(r+1, c));
-                    ret.push_back(to_string(r, c+1));
-                    ret.push_back(to_string(r+1, c+1));
-                    ret.push_back(to_string(r, c));
+        double each_time = 8.0 / alphabet.size();
+        REP(i, alphabet.size()){
+            char c = alphabet[i];
+            NNGraph g = create_nngraph_with_same_color(c);
+            vector<State*> initial_states = create_initial_states(g);
+            double limit = start_time + each_time*(i+1);
+            vector<int> min_path = search_min_path(initial_states, limit, g);
+            ret.push_back(string(1, c));
+            REP(j, min_path.size()){
+                int p = min_path[j];
+                int y = p / ps;
+                int x = p % ps;
+                int last = (int)ret.size()-1;
+                if(ret[last]!=to_string(y+1, x)){
+                    ret.push_back(to_string(y+1, x));
+                    ret.push_back(to_string(y, x+1));
+                    ret.push_back(to_string(y+1, x+1));
+                    ret.push_back(to_string(y, x));
+                }else{
+                    ret.push_back(to_string(y+1, x+1));
+                    ret.push_back(to_string(y, x));
+                    ret.push_back(to_string(y+1, x));
+                    ret.push_back(to_string(y, x+1));
                 }
+            }
         }
         return ret;
     }
