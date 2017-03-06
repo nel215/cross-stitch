@@ -1,16 +1,7 @@
 #include "CrossStitch.hpp"
 #include <cassert>
 
-void test_extract_cells_with_same_color(){
-    vector<string> p;
-    p.push_back(".a");
-    p.push_back("..");
 
-    vector<P> cells = extract_cells_with_same_color(p, 'a');
-    assert(cells.size() == 1);
-    assert(cells[0].y == 0);
-    assert(cells[0].x == 1);
-}
 
 void test_extract_stitches(){
     vector<P> p;
@@ -22,6 +13,16 @@ void test_extract_stitches(){
 
 class TestingCrossStitch : public CrossStitch {
 public:
+    void test_extract_cells_with_same_color(){
+        vector<string> p;
+        p.push_back(".a");
+        p.push_back("..");
+        this->set_pattern(p);
+
+        vector<int> cells = extract_cells_with_same_color('a');
+        assert(cells.size() == 1);
+        assert(cells[0] == 1);
+    }
     void test_create_nngraph_with_same_color(){
         vector<string> p;
         p.push_back(".a..");
@@ -83,9 +84,9 @@ public:
 };
 
 int main(){
-    test_extract_cells_with_same_color();
     test_extract_stitches();
     TestingCrossStitch tcs;
+    tcs.test_extract_cells_with_same_color();
     tcs.test_create_nngraph_with_same_color();
     tcs.test_extract_next_states();
     tcs.test_create_initial_states();

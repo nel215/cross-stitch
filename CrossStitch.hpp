@@ -91,16 +91,7 @@ struct Stitch{
     }
 };
 
-vector<P> extract_cells_with_same_color(const vector<string> &pattern, char c){
-    vector<P> cells;
 
-    REP(y, pattern.size())REP(x, pattern.size()){
-        if(pattern[y][x]!=c)continue;
-        cells.push_back(P(y, x));
-    }
-
-    return cells;
-}
 
 vector<Stitch> convert_cells_to_stitches(const vector<P> &cells){
     vector<Stitch> stitches;
@@ -154,6 +145,17 @@ protected:
         int by = bp / ps;
         int bx = bp % ps;
         return sq_dist(ay, ax, by, bx);
+    }
+    vector<int> extract_cells_with_same_color(char c){
+        int ps = this->pattern_size;
+        vector<int> cells;
+
+        REP(y, ps)REP(x, ps){
+            if(this->pattern[y][x]!=c)continue;
+            cells.push_back(y*ps+x);
+        }
+
+        return cells;
     }
     NNGraph create_nngraph_with_same_color(char c){
         int ps = this->pattern_size;
