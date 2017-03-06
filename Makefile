@@ -5,7 +5,8 @@ test: build-test
 	./test.out
 
 # build
+seed=1
 build:
 	g++ -O2 -Wall CrossStitch.cpp
 run: build
-	java -jar ./tester.jar -exec ./a.out -seed 1 -novis
+	java -jar ./tester.jar -exec ./a.out -seed $(seed) -novis
