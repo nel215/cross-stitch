@@ -10,3 +10,7 @@ build:
 	g++ -O2 -Wall CrossStitch.cpp
 run: build
 	java -jar ./tester.jar -exec ./a.out -seed $(seed) -novis
+
+# example
+example: build
+	sh ./example.sh
