@@ -199,7 +199,7 @@ public:
         vector<string> ret;
 
         vector<char> alphabet = create_alphabet(pattern);
-        double each_time = 8.0 / alphabet.size();
+        double each_time = 9.0 / alphabet.size();
         INFO(<< "S=" << pattern.size());
         INFO(<< "C=" << alphabet.size());
         REP(i, alphabet.size()){
