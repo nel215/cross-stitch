@@ -207,13 +207,27 @@ public:
             ret.push_back(string(1, c));
             //DEBUG(<< "start search: " << c << endl);
             vector<Stitch> stitches = extract_stitches(pattern, c);
-            random_shuffle(ALL(stitches));
-            vector<pair<int, int> > min_perm = search_min_permutation(stitches);
-            int evaluated = evaluate(stitches, min_perm);
-            DEBUG(<< "evaluated: " << evaluated);
-            REP(j, min_perm.size()){
-                const Stitch &s = stitches[min_perm[j].first];
-                int rev = min_perm[j].second;
+
+            // search
+            int best_score = 1<<30;
+            vector<pair<int, int> > best_min_perm;
+            vector<Stitch> best_stitches;
+            double limit = start_time + each_time*(i+1);
+            do{
+                random_shuffle(ALL(stitches));
+                vector<pair<int, int> > min_perm = search_min_permutation(stitches);
+                int evaluated = evaluate(stitches, min_perm);
+                if(evaluated < best_score){
+                    best_score = evaluated;
+                    best_min_perm = min_perm;
+                    best_stitches = stitches;
+                }
+            }while(get_time() < limit);
+            //DEBUG(<< "best: " << best_score);
+
+            REP(j, best_min_perm.size()){
+                const Stitch &s = best_stitches[best_min_perm[j].first];
+                int rev = best_min_perm[j].second;
                 const P &f = rev ? s.to : s.from;
                 const P &t = rev ? s.from : s.to;
                 ret.push_back(to_string(f.y, f.x));
