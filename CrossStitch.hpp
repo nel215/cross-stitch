@@ -50,6 +50,11 @@ struct P{
     P(int y, int x){
         init(y, x);
     }
+    string repr(){
+        ostringstream oss;
+        oss << y << " " << x;
+        return oss.str();
+    }
 };
 
 struct Stitch{
