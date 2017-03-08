@@ -129,6 +129,84 @@ int sq_dist(int ay, int ax, int by, int bx){
     return dy*dy + dx*dx;
 }
 
+int sq_dist(const P &a, const P &b){
+    return sq_dist(a.y, a.x, b.y, b.x);
+}
+
+vector<pair<int, int> > search_min_permutation(vector<Stitch> &stitches){
+    list<pair<int, int> > res; // idx, rev
+    res.push_back(make_pair(0, 0));
+    for(int i=1; i<(int)stitches.size(); i++){
+        int best_score = 1<<30;
+        list<pair<int, int> >::iterator best_it = res.begin();
+        int best_rev = 0;
+
+        Stitch &t = stitches[i];
+        list<pair<int, int> >::iterator prev = res.end();
+        for(list<pair<int, int> >::iterator it=res.begin(); it != res.end(); it++){
+            int ci = it->first;
+            int cr = it->second;
+            if(prev==res.end()){
+                // target to first
+                const Stitch &a = stitches[ci];
+                REP(r, 2){
+                    const P *mid_to = r ? &t.from : &t.to;
+                    const P *to = cr ? &a.to : &a.from;
+                    int d = sq_dist(*mid_to, *to);
+                    if(d==0)continue;
+                    if(best_score > d){
+                        best_score = d;
+                        best_it = it;
+                        best_rev = r;
+                    }
+                }
+            }else{
+                // prev to target to current
+                int pi = prev->first;
+                int pr = prev->second;
+                const Stitch &a = stitches[ci];
+                const Stitch &b = stitches[pi];
+                REP(r, 2){
+                    const P *from = pr ? &b.from : &b.to;
+                    const P *mid_from = r ? &t.to : &t.from;
+                    const P *mid_to = r ? &t.from : &t.to;
+                    const P *to = cr ? &a.to : &a.from;
+                    int from_d = sq_dist(*from, *mid_from);
+                    int to_d = sq_dist(*mid_to, *to);
+                    if(from_d == 0 || to_d == 0)continue;
+                    int d = from_d + to_d - sq_dist(*from, *to);
+                    if(best_score > d){
+                        best_score = d;
+                        best_it = it;
+                        best_rev = r;
+                    }
+                }
+            }
+            prev = it;
+        }
+        // last to target
+        int pi = prev->first;
+        int pr = prev->second;
+        const Stitch &b = stitches[pi];
+        REP(r, 2){
+            const P *from = pr ? &b.from : &b.to;
+            const P *mid_from = r ? &t.to : &t.from;
+            int d = sq_dist(*from, *mid_from);
+            if(d == 0)continue;
+            if(best_score > d){
+                best_score = d;
+                best_it = res.end();
+                best_rev = r;
+            }
+        }
+        res.insert(best_it, make_pair(i, best_rev));
+    }
+
+    return vector<pair<int, int> >(ALL(res));
+}
+
+
+
 vector<int> create_hash_table(int s){
     vector<int> res(s*s);
     REP(i, res.size())res[i] = xor128();
@@ -332,30 +410,41 @@ public:
         INFO(<< "C=" << alphabet.size());
         REP(i, alphabet.size()){
             char c = alphabet[i];
-            //DEBUG(<< "start search: " << c << endl);
-            NNGraph g = create_nngraph_with_same_color(c);
-            vector<int> cells = extract_cells_with_same_color(c);
-            vector<State*> initial_states = create_initial_states(g);
-            double limit = start_time + each_time*(i+1);
-            vector<int> min_path = search_min_path(initial_states, limit, g, cells);
             ret.push_back(string(1, c));
-            REP(j, min_path.size()){
-                int p = min_path[j];
-                int y = p / ps;
-                int x = p % ps;
-                int last = (int)ret.size()-1;
-                if(ret[last]!=to_string(y+1, x)){
-                    ret.push_back(to_string(y+1, x));
-                    ret.push_back(to_string(y, x+1));
-                    ret.push_back(to_string(y+1, x+1));
-                    ret.push_back(to_string(y, x));
-                }else{
-                    ret.push_back(to_string(y+1, x+1));
-                    ret.push_back(to_string(y, x));
-                    ret.push_back(to_string(y+1, x));
-                    ret.push_back(to_string(y, x+1));
-                }
+            //DEBUG(<< "start search: " << c << endl);
+            vector<Stitch> stitches = extract_stitches(pattern, c);
+            vector<pair<int, int> > min_perm = search_min_permutation(stitches);
+            REP(j, min_perm.size()){
+                const Stitch &s = stitches[min_perm[j].first];
+                int rev = min_perm[j].second;
+                const P &f = rev ? s.to : s.from;
+                const P &t = rev ? s.from : s.to;
+                ret.push_back(to_string(f.y, f.x));
+                ret.push_back(to_string(t.y, t.x));
             }
+            //NNGraph g = create_nngraph_with_same_color(c);
+            //vector<int> cells = extract_cells_with_same_color(c);
+            //vector<State*> initial_states = create_initial_states(g);
+            //double limit = start_time + each_time*(i+1);
+            //vector<int> min_path = search_min_path(initial_states, limit, g, cells);
+            //ret.push_back(string(1, c));
+            //REP(j, min_path.size()){
+            //    int p = min_path[j];
+            //    int y = p / ps;
+            //    int x = p % ps;
+            //    int last = (int)ret.size()-1;
+            //    if(ret[last]!=to_string(y+1, x)){
+            //        ret.push_back(to_string(y+1, x));
+            //        ret.push_back(to_string(y, x+1));
+            //        ret.push_back(to_string(y+1, x+1));
+            //        ret.push_back(to_string(y, x));
+            //    }else{
+            //        ret.push_back(to_string(y+1, x+1));
+            //        ret.push_back(to_string(y, x));
+            //        ret.push_back(to_string(y+1, x));
+            //        ret.push_back(to_string(y, x+1));
+            //    }
+            //}
         }
         return ret;
     }
