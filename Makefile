@@ -16,7 +16,7 @@ seed=1
 build:
 	g++ -O2 -Wall CrossStitch.cpp
 run: build
-	java -jar ./tester.jar -exec ./a.out -seed $(seed) -novis
+	java -jar ./tester.jar -exec ./a.out -seed $(seed) -backOnly
 
 # example
 example: build
