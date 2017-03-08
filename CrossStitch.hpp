@@ -100,17 +100,15 @@ struct P{
 
 struct Stitch{
     P from, to;
-    bool rev;
-    void init(P f, P t, bool r){
+    void init(P f, P t){
         this->from = f;
         this->to = t;
-        this->rev = r;
     }
     Stitch(){
-        init(P(), P(), false);
+        init(P(), P());
     }
-    Stitch(P f, P t, bool r){
-        init(f, t, r);
+    Stitch(P f, P t){
+        init(f, t);
     }
 };
 
@@ -119,8 +117,8 @@ vector<Stitch> extract_stitches(const vector<string> &pattern, const char c){
     vector<Stitch> res;
     REP(y, ps)REP(x, ps){
         if(pattern[y][x]!=c)continue;
-        res.push_back(Stitch(P(y, x), P(y+1, x+1), false));
-        res.push_back(Stitch(P(y+1, x), P(y, x+1), false));
+        res.push_back(Stitch(P(y, x), P(y+1, x+1)));
+        res.push_back(Stitch(P(y+1, x), P(y, x+1)));
     }
     return res;
 }
