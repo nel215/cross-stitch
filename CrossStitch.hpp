@@ -84,6 +84,47 @@ public:
 
 typedef priority_queue<State*, vector<State*>, StateComparator> StateQueue;
 
+struct P{
+    int y, x;
+    void init(int y, int x){
+        this->y = y;
+        this->x = x;
+    }
+    P(){
+        init(0, 0);
+    }
+    P(int y, int x){
+        init(y, x);
+    }
+};
+
+struct Stitch{
+    P from, to;
+    bool rev;
+    void init(P f, P t, bool r){
+        this->from = f;
+        this->to = t;
+        this->rev = r;
+    }
+    Stitch(){
+        init(P(), P(), false);
+    }
+    Stitch(P f, P t, bool r){
+        init(f, t, r);
+    }
+};
+
+vector<Stitch> extract_stitches(const vector<string> &pattern, const char c){
+    int ps = pattern.size();
+    vector<Stitch> res;
+    REP(y, ps)REP(x, ps){
+        if(pattern[y][x]!=c)continue;
+        res.push_back(Stitch(P(y, x), P(y+1, x+1), false));
+        res.push_back(Stitch(P(y+1, x), P(y, x+1), false));
+    }
+    return res;
+}
+
 int sq_dist(int ay, int ax, int by, int bx){
     int dy = ay - by;
     int dx = ax - bx;

@@ -2,6 +2,16 @@
 #include <cassert>
 
 
+void test_extract_stitches(){
+    vector<string> p;
+    p.push_back(".a");
+    p.push_back("..");
+
+    vector<Stitch> stitches = extract_stitches(p, 'a');
+    assert(stitches.size()==2);
+}
+
+
 class TestingCrossStitch : public CrossStitch {
 public:
     void test_extract_cells_with_same_color(){
