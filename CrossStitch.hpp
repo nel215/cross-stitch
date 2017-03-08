@@ -38,23 +38,37 @@ string to_string(int r, int c){
     return oss.str();
 }
 
+
+int xor128() {
+  static int x = 123456789;
+  static int y = 362436069;
+  static int z = 521288629;
+  static int w = 88675123;
+
+  int t = x ^ (x << 11);
+  x = y; y = z; z = w;
+  return w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+}
+
 typedef vector<vector<int> > NNGraph;
 
 class State{
-    void init(int pos, int score, State *prev){
+    void init(int pos, int score, int hash, State *prev){
         this->pos = pos;
         this->score = score;
+        this->hash = hash;
         this->prev = prev;
     }
 public:
     int pos;
     int score;
     State *prev;
+    int hash;
     State(int pos){
-        this->init(pos, 0, NULL);
+        this->init(pos, 0, 0, NULL);
     }
-    State(int pos, int score, State *prev){
-        this->init(pos, score, prev);
+    State(int pos, int score, int hash, State *prev){
+        this->init(pos, score, hash, prev);
     }
     void debug(){
         cerr << "pos: " << pos << ", score: " << score << endl;
@@ -76,10 +90,17 @@ int sq_dist(int ay, int ax, int by, int bx){
     return dy*dy + dx*dx;
 }
 
+vector<int> create_hash_table(int s){
+    vector<int> res(s*s);
+    REP(i, res.size())res[i] = xor128();
+    return res;
+}
+
 class CrossStitch {
 protected:
     vector<string> pattern;
     vector<char> alphabet;
+    vector<int> hash_table;
     int pattern_size;
     void set_pattern(vector<string> pattern){
         this->pattern = pattern;
@@ -92,6 +113,7 @@ protected:
         }
         sort(ALL(alphabet));
         alphabet.erase(unique(ALL(alphabet)), alphabet.end());
+        hash_table = create_hash_table(ps);
     }
     bool is_valid_position(int y, int x){
         int ps = this->pattern_size;
@@ -161,7 +183,7 @@ protected:
         return nngraph;
     }
     vector<State*> extract_next_states(State *current_state, const NNGraph &g, const vector<int> &cells){
-        // TODO: hash
+        const State *cs = current_state;
         int ps = this->pattern_size;
         vector<int> used(ps*ps);
 
@@ -178,8 +200,9 @@ protected:
         REP(i, g[current_state->pos].size()){
             int to = g[current_state->pos][i];
             if(used[to])continue;
-            int score = current_state->score + this->sq_dist_of_pos(current_state->pos, to);
-            State *next_state = new State(to, score, current_state);
+            int score = cs->score + this->sq_dist_of_pos(current_state->pos, to);
+            int hash = cs->hash ^ hash_table[to];
+            State *next_state = new State(to, score, hash, current_state);
             next_states.push_back(next_state);
         }
         if(next_states.size()>0)return next_states;
@@ -188,7 +211,8 @@ protected:
             int to = cells[i];
             if(used[to])continue;
             int score = current_state->score + this->sq_dist_of_pos(current_state->pos, to);
-            State *next_state = new State(to, score, current_state);
+            int hash = cs->hash ^ hash_table[to];
+            State *next_state = new State(to, score, hash, current_state);
             next_states.push_back(next_state);
         }
 

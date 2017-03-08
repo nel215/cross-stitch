@@ -37,10 +37,11 @@ public:
         g[0].push_back(1);
         g[1].push_back(2);
         State s1(0);
-        State s2(1, 1, &s1);
+        State s2(1, 1, 0, &s1);
         vector<State*> next_states = this->extract_next_states(&s2, g, vector<int>());
         assert(next_states.size() == 1);
         assert(next_states[0]->pos == 2);
+        assert(next_states[0]->hash != 0);
         assert(next_states[0]->score == 3);
     }
 
