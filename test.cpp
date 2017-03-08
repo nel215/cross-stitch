@@ -2,15 +2,6 @@
 #include <cassert>
 
 
-
-void test_extract_stitches(){
-    vector<P> p;
-    p.push_back(P(0, 0));
-
-    vector<Stitch> stitches = convert_cells_to_stitches(p);
-    assert(stitches.size() == 2);
-}
-
 class TestingCrossStitch : public CrossStitch {
 public:
     void test_extract_cells_with_same_color(){
@@ -84,7 +75,6 @@ public:
 };
 
 int main(){
-    test_extract_stitches();
     TestingCrossStitch tcs;
     tcs.test_extract_cells_with_same_color();
     tcs.test_create_nngraph_with_same_color();

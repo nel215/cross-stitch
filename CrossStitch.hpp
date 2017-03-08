@@ -29,11 +29,6 @@ double get_time(){
 	return tv.tv_sec + tv.tv_usec*1e-6;
 }
 
-// const
-// cross type
-const int LTRB = 0; // left top to right bottom
-const int LBRT = 1; // left bottom to right top
-
 string to_string(int r, int c){
     ostringstream oss;
     oss << r << " " << c;
@@ -72,49 +67,10 @@ public:
 
 typedef priority_queue<State*, vector<State*>, StateComparator> StateQueue;
 
-struct P{
-    int y, x;
-    P(int _y, int _x){
-        y = _y;
-        x = _x;
-    }
-    P(){
-        P(0, 0);
-    }
-};
-
-struct Stitch{
-    P from, to;
-    Stitch(P f, P t){
-        from = f;
-        to = t;
-    }
-};
-
-
-
-vector<Stitch> convert_cells_to_stitches(const vector<P> &cells){
-    vector<Stitch> stitches;
-
-    REP(i, cells.size()){
-        int y = cells[i].y;
-        int x = cells[i].x;
-        stitches.push_back(Stitch(P(y+0, x+0), P(y+1, x+1)));
-        stitches.push_back(Stitch(P(y+0, x+1), P(y+1, x+0)));
-    }
-
-    return stitches;
-}
-
 int sq_dist(int ay, int ax, int by, int bx){
     int dy = ay - by;
     int dx = ax - bx;
     return dy*dy + dx*dx;
-}
-
-bool include(int ay, int ax, int by, int bx, int thres){
-    int sd = sq_dist(ay, ax, by, bx);
-    return sd <= thres*thres;
 }
 
 class CrossStitch {
