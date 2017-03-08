@@ -21,6 +21,9 @@
 #define ALL(x) (x).begin(),(x).end()
 #define LL long long
 
+#define INFO(x) cerr << "INFO: " x << endl
+#define DEBUG(x) cerr << "DEBUG: " x << endl
+
 using namespace std;
 
 double get_time(){
@@ -252,9 +255,11 @@ public:
         int ps = this->pattern_size;
         // for each color, for each cell (r, c) do two stitches (r+1, c)-(r, c+1)-(r+1, c+1)-(r, c)
         double each_time = 8.0 / alphabet.size();
+        INFO(<< "S=" << this->pattern_size);
+        INFO(<< "C=" << alphabet.size());
         REP(i, alphabet.size()){
             char c = alphabet[i];
-            cerr << "start search: " << c << endl;
+            DEBUG(<< "start search: " << c << endl);
             NNGraph g = create_nngraph_with_same_color(c);
             vector<int> cells = extract_cells_with_same_color(c);
             vector<State*> initial_states = create_initial_states(g);
