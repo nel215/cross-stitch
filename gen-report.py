@@ -10,6 +10,8 @@ for seed in os.listdir('./tmp'):
 
     info = {'seed': seed}
     for log in logs:
+        if log.find('DEBUG:') == 0:
+            print(log)
         if log.find('INFO:') == 0:
             d = log.split(' ')[1]
             k, v = d.split('=')
