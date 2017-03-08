@@ -171,6 +171,22 @@ vector<pair<int, int> > search_min_permutation(vector<Stitch> &stitches){
     return vector<pair<int, int> >(ALL(res));
 }
 
+int evaluate(vector<Stitch> &stitches, const vector<pair<int, int> > &min_perm){
+    int res = 0;
+    P *prev = NULL;
+    REP(i, min_perm.size()){
+        Stitch &s = stitches[min_perm[i].first];
+        int rev = min_perm[i].second;
+        P *f = rev ? &s.to : &s.from;
+        P *t = rev ? &s.from : &s.to;
+        if(prev!=NULL){
+            res += sq_dist(*prev, *f);
+        }
+        prev = t;
+    }
+    return res;
+}
+
 class CrossStitch {
 public:
     vector<string> embroider(vector<string> pattern) {
@@ -186,7 +202,10 @@ public:
             ret.push_back(string(1, c));
             //DEBUG(<< "start search: " << c << endl);
             vector<Stitch> stitches = extract_stitches(pattern, c);
+            random_shuffle(ALL(stitches));
             vector<pair<int, int> > min_perm = search_min_permutation(stitches);
+            int evaluated = evaluate(stitches, min_perm);
+            DEBUG(<< "evaluated: " << evaluated);
             REP(j, min_perm.size()){
                 const Stitch &s = stitches[min_perm[j].first];
                 int rev = min_perm[j].second;
