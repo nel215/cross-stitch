@@ -4,6 +4,13 @@ build-test:
 test: build-test
 	./test.out
 
+# profile
+pbuild:
+	g++ -O2 -Wall -pg -g CrossStitch.cpp
+profile: pbuild
+	java -jar ./tester.jar -exec ./a.out -backOnly -seed 2
+
+
 # build
 seed=1
 build:
