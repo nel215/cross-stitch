@@ -237,10 +237,13 @@ protected:
         REP(i, g.size())if(g[i].size()>0)node_size++;
 
         vector<StateQueue> beam(node_size, StateQueue());
+        vector<map<int, int> > hash_to_score(node_size, map<int, int>());
         int init_idx = 0;
         while(get_time() < limit){
             if(init_idx < (int)initial_states.size()){
-                beam[0].push(initial_states[init_idx++]);
+                State *is = initial_states[init_idx++];
+                beam[0].push(is);
+                hash_to_score[0][is->hash] = is->score;
             }
             int b=0;
             for(;;){
@@ -250,11 +253,18 @@ protected:
                 beam[b].pop();
                 //cerr << "b: " << b << ", ";
                 //s->debug();
+                if(hash_to_score[b][s->hash] != s->score){
+                    continue;
+                }
                 vector<State*> next_states = this->extract_next_states(s, g, cells);
                 if(next_states.size()==0)continue;
                 REP(j, next_states.size()){
-                    //next_states[j]->debug();
-                    beam[b+1].push(next_states[j]);
+                    State *ns = next_states[j];
+                    if(hash_to_score[b+1].count(ns->hash) > 0 && hash_to_score[b+1][ns->hash] <= ns->score){
+                        continue;
+                    }
+                    hash_to_score[b+1][ns->hash] = ns->score;
+                    beam[b+1].push(ns);
                 }
                 b++;
             }
@@ -283,7 +293,7 @@ public:
         INFO(<< "C=" << alphabet.size());
         REP(i, alphabet.size()){
             char c = alphabet[i];
-            DEBUG(<< "start search: " << c << endl);
+            //DEBUG(<< "start search: " << c << endl);
             NNGraph g = create_nngraph_with_same_color(c);
             vector<int> cells = extract_cells_with_same_color(c);
             vector<State*> initial_states = create_initial_states(g);
