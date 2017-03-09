@@ -4,14 +4,15 @@
 
 void test_extract_stitches(){
     vector<string> p;
-    p.push_back(".a.");
-    p.push_back("a..");
-    p.push_back("a..");
+    p.push_back(".a..");
+    p.push_back("a...");
+    p.push_back("a...");
+    p.push_back("...a");
 
     vector<Stitch> stitches = extract_stitches(p, 'a');
-    assert(stitches.size()==6);
+    assert(stitches.size()==8);
 
-    vector<pair<int, int> > min_perm = search_min_permutation(stitches);
+    vector<Flip> min_perm = search_min_permutation(stitches);
     assert(min_perm.size()==stitches.size());
 }
 

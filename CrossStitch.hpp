@@ -71,6 +71,20 @@ struct Stitch{
     }
 };
 
+struct Flip{
+    int idx, rev;
+    void init(int i, int r){
+        this->idx = i;
+        this->rev = r;
+    }
+    Flip(int i, int r){
+        init(i, r);
+    }
+    Flip(){
+        init(0, 0);
+    }
+};
+
 vector<char> create_alphabet(const vector<string> &pattern){
     vector<char> res;
     int ps = pattern.size();
@@ -104,19 +118,19 @@ int sq_dist(const P &a, const P &b){
     return sq_dist(a.y, a.x, b.y, b.x);
 }
 
-vector<pair<int, int> > search_min_permutation(vector<Stitch> &stitches){
-    list<pair<int, int> > res; // idx, rev
-    res.push_back(make_pair(0, 0));
+vector<Flip> search_min_permutation(vector<Stitch> &stitches){
+    list<Flip> res; // idx, rev
+    res.push_back(Flip(0, 0));
     for(int i=1; i<(int)stitches.size(); i++){
         int best_score = 1<<30;
-        list<pair<int, int> >::iterator best_it = res.begin();
+        list<Flip>::iterator best_it = res.begin();
         int best_rev = 0;
 
         Stitch &t = stitches[i];
-        list<pair<int, int> >::iterator prev = res.end();
-        for(list<pair<int, int> >::iterator it=res.begin(); it != res.end(); it++){
-            int ci = it->first;
-            int cr = it->second;
+        list<Flip>::iterator prev = res.end();
+        for(list<Flip>::iterator it=res.begin(); it != res.end(); it++){
+            int ci = it->idx;
+            int cr = it->rev;
             if(prev==res.end()){
                 // target to first
                 const Stitch &a = stitches[ci];
@@ -133,8 +147,8 @@ vector<pair<int, int> > search_min_permutation(vector<Stitch> &stitches){
                 }
             }else{
                 // prev to target to current
-                int pi = prev->first;
-                int pr = prev->second;
+                int pi = prev->idx;
+                int pr = prev->rev;
                 const Stitch &a = stitches[ci];
                 const Stitch &b = stitches[pi];
                 REP(r, 2){
@@ -156,8 +170,8 @@ vector<pair<int, int> > search_min_permutation(vector<Stitch> &stitches){
             prev = it;
         }
         // last to target
-        int pi = prev->first;
-        int pr = prev->second;
+        int pi = prev->idx;
+        int pr = prev->rev;
         const Stitch &b = stitches[pi];
         REP(r, 2){
             const P *from = pr ? &b.from : &b.to;
@@ -170,18 +184,18 @@ vector<pair<int, int> > search_min_permutation(vector<Stitch> &stitches){
                 best_rev = r;
             }
         }
-        res.insert(best_it, make_pair(i, best_rev));
+        res.insert(best_it, Flip(i, best_rev));
     }
 
-    return vector<pair<int, int> >(ALL(res));
+    return vector<Flip>(ALL(res));
 }
 
-int evaluate(vector<Stitch> &stitches, const vector<pair<int, int> > &min_perm){
+int evaluate(vector<Stitch> &stitches, const vector<Flip> &min_perm){
     int res = 0;
     P *prev = NULL;
     REP(i, min_perm.size()){
-        Stitch &s = stitches[min_perm[i].first];
-        int rev = min_perm[i].second;
+        Stitch &s = stitches[min_perm[i].idx];
+        int rev = min_perm[i].rev;
         P *f = rev ? &s.to : &s.from;
         P *t = rev ? &s.from : &s.to;
         if(prev!=NULL){
@@ -210,12 +224,12 @@ public:
 
             // search
             int best_score = 1<<30;
-            vector<pair<int, int> > best_min_perm;
+            vector<Flip> best_min_perm;
             vector<Stitch> best_stitches;
             double limit = start_time + each_time*(i+1);
             do{
                 random_shuffle(ALL(stitches));
-                vector<pair<int, int> > min_perm = search_min_permutation(stitches);
+                vector<Flip> min_perm = search_min_permutation(stitches);
                 int evaluated = evaluate(stitches, min_perm);
                 if(evaluated < best_score){
                     best_score = evaluated;
@@ -226,8 +240,8 @@ public:
             //DEBUG(<< "best: " << best_score);
 
             REP(j, best_min_perm.size()){
-                const Stitch &s = best_stitches[best_min_perm[j].first];
-                int rev = best_min_perm[j].second;
+                const Stitch &s = best_stitches[best_min_perm[j].idx];
+                int rev = best_min_perm[j].rev;
                 const P &f = rev ? s.to : s.from;
                 const P &t = rev ? s.from : s.to;
                 ret.push_back(to_string(f.y, f.x));
