@@ -18,6 +18,7 @@ build:
 run: build
 	java -jar ./tester.jar -exec ./a.out -seed $(seed) -backOnly
 
-# example
-example: build
-	sh ./example.sh
+# parallel
+n_test=10
+parallel: build
+	python parallel.py -n $(n_test) && python gen-report.py
