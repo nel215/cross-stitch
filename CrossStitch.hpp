@@ -69,6 +69,12 @@ struct Stitch{
     Stitch(P f, P t){
         init(f, t);
     }
+    P* get_from(const int &rev){
+        return rev ? &to : &from;
+    }
+    P* get_to(const int &rev){
+        return rev ? &from : &to;
+    }
 };
 
 struct Flip{
@@ -133,10 +139,10 @@ vector<Flip> search_min_permutation(vector<Stitch> &stitches){
             int cr = it->rev;
             if(prev==res.end()){
                 // target to first
-                const Stitch &a = stitches[ci];
+                Stitch &a = stitches[ci];
                 REP(r, 2){
-                    const P *mid_to = r ? &t.from : &t.to;
-                    const P *to = cr ? &a.to : &a.from;
+                    P *mid_to = t.get_to(r);
+                    P *to = a.get_from(cr);
                     int d = sq_dist(*mid_to, *to);
                     if(d==0)continue;
                     if(best_score > d){
@@ -149,13 +155,13 @@ vector<Flip> search_min_permutation(vector<Stitch> &stitches){
                 // prev to target to current
                 int pi = prev->idx;
                 int pr = prev->rev;
-                const Stitch &a = stitches[ci];
-                const Stitch &b = stitches[pi];
+                Stitch &a = stitches[ci];
+                Stitch &b = stitches[pi];
                 REP(r, 2){
-                    const P *from = pr ? &b.from : &b.to;
-                    const P *mid_from = r ? &t.to : &t.from;
-                    const P *mid_to = r ? &t.from : &t.to;
-                    const P *to = cr ? &a.to : &a.from;
+                    P *from = b.get_to(pr);
+                    P *mid_from = t.get_from(r);
+                    P *mid_to = t.get_to(r);
+                    P *to = a.get_from(cr);
                     int from_d = sq_dist(*from, *mid_from);
                     int to_d = sq_dist(*mid_to, *to);
                     if(from_d == 0 || to_d == 0)continue;
@@ -172,10 +178,10 @@ vector<Flip> search_min_permutation(vector<Stitch> &stitches){
         // last to target
         int pi = prev->idx;
         int pr = prev->rev;
-        const Stitch &b = stitches[pi];
+        Stitch &b = stitches[pi];
         REP(r, 2){
-            const P *from = pr ? &b.from : &b.to;
-            const P *mid_from = r ? &t.to : &t.from;
+            P *from = b.get_to(pr);
+            P *mid_from = t.get_from(r);
             int d = sq_dist(*from, *mid_from);
             if(d == 0)continue;
             if(best_score > d){
@@ -196,8 +202,8 @@ int evaluate(vector<Stitch> &stitches, const vector<Flip> &min_perm){
     REP(i, min_perm.size()){
         Stitch &s = stitches[min_perm[i].idx];
         int rev = min_perm[i].rev;
-        P *f = rev ? &s.to : &s.from;
-        P *t = rev ? &s.from : &s.to;
+        P *f = s.get_from(rev);
+        P *t = s.get_to(rev);
         if(prev!=NULL){
             res += sq_dist(*prev, *f);
         }
