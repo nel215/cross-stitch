@@ -212,6 +212,84 @@ int evaluate(vector<Stitch> &stitches, const vector<Flip> &min_perm){
     return res;
 }
 
+int get_dist(int c, vector<Stitch> &stitches, vector<Flip> &perm){
+    int n = perm.size();
+    int d = 0;
+    Stitch &cs = stitches[perm[c].idx];
+    if(c-1>=0){
+        Stitch &ps = stitches[perm[c-1].idx];
+        P *f = ps.get_to(perm[c-1].rev);
+        P *t = cs.get_from(perm[c].rev);
+        d += sq_dist(*f, *t);
+    }
+    if(c+1<n){
+        Stitch &ns = stitches[perm[c+1].idx];
+        P *f = cs.get_to(perm[c].rev);
+        P *t = ns.get_from(perm[c+1].rev);
+        d += sq_dist(*f, *t);
+    }
+    return d;
+}
+
+bool valid_perm(int c, vector<Stitch> &stitches, vector<Flip> &perm){
+    int n = perm.size();
+    Stitch &cs = stitches[perm[c].idx];
+    if(c-1>=0){
+        Stitch &ps = stitches[perm[c-1].idx];
+        P *f = ps.get_to(perm[c-1].rev);
+        P *t = cs.get_from(perm[c].rev);
+        if(sq_dist(*f, *t)==0)return false;
+    }
+    if(c+1<n){
+        Stitch &ns = stitches[perm[c+1].idx];
+        P *f = cs.get_to(perm[c].rev);
+        P *t = ns.get_from(perm[c+1].rev);
+        if(sq_dist(*f, *t)==0)return false;
+    }
+    return true;
+}
+
+void optimize_permutation(vector<Stitch> &stitches, vector<Flip> &perm){
+    int n = perm.size();
+    vector<pair<int, int> > cand(perm.size());
+    REP(i, n){
+        int d = get_dist(i, stitches, perm);
+        cand[i] = make_pair(-d, i);
+    }
+    sort(ALL(cand));
+    REP(i, n){
+        for(int j=i+1; j<n; j++){
+            pair<int, int> ci = cand[i];
+            pair<int, int> cj = cand[j];
+            Flip f1 = perm[ci.second];
+            Flip f2 = perm[cj.second];
+            int cdist = get_dist(ci.second, stitches, perm) + get_dist(cj.second, stitches, perm);
+            int best = 1<<30;
+            pair<int, int> best_rev;
+            swap(perm[ci.second].idx, perm[cj.second].idx);
+            REP(ir, 2)REP(jr, 2){
+                perm[ci.second].rev = ir;
+                perm[cj.second].rev = jr;
+                if(!valid_perm(ci.second, stitches, perm))continue;
+                if(!valid_perm(cj.second, stitches, perm))continue;
+                int d = get_dist(ci.second, stitches, perm) + get_dist(cj.second, stitches, perm);
+                if(d < best){
+                    best = d;
+                    best_rev = make_pair(ir, jr);
+                }
+            }
+            if(best<cdist){
+                perm[ci.second].rev = best_rev.first;
+                perm[cj.second].rev = best_rev.second;
+                return;
+            }else{
+                perm[ci.second] = f1;
+                perm[cj.second] = f2;
+            }
+        }
+    }
+}
+
 class CrossStitch {
 public:
     vector<string> embroider(vector<string> pattern) {
@@ -233,7 +311,7 @@ public:
             vector<Flip> best_min_perm;
             vector<Stitch> best_stitches;
             double limit = start_time + each_time*(i+1);
-            do{
+            REP(j, 10){
                 random_shuffle(ALL(stitches));
                 vector<Flip> min_perm = search_min_permutation(stitches);
                 int evaluated = evaluate(stitches, min_perm);
@@ -242,7 +320,14 @@ public:
                     best_min_perm = min_perm;
                     best_stitches = stitches;
                 }
-            }while(get_time() < limit);
+                if(get_time() > limit)break;
+            }
+            while(get_time() < limit){
+                optimize_permutation(best_stitches, best_min_perm);
+                int score = evaluate(best_stitches, best_min_perm);
+                if(score==best_score)break;
+                best_score = score;
+            }
             //DEBUG(<< "best: " << best_score);
 
             REP(j, best_min_perm.size()){
