@@ -290,6 +290,27 @@ void optimize_permutation(vector<Stitch> &stitches, vector<Flip> &perm){
     }
 }
 
+vector<Flip> search_by_stitch_swap(vector<Stitch> &stitches, double limit){
+    int best_score = 1<<30;
+    vector<Flip> best_min_perm = search_min_permutation(stitches);
+    while(get_time() < limit){
+        int a = rand()%stitches.size();
+        int b = rand()%stitches.size();
+        if(a==b)continue;
+        swap(stitches[a], stitches[b]);
+        vector<Flip> min_perm = search_min_permutation(stitches);
+        int score = evaluate(stitches, min_perm);
+        if(score < best_score){
+            best_score = score;
+            best_min_perm = min_perm;
+            //DEBUG(<< "update: " << score);
+        }else{
+            swap(stitches[a], stitches[b]);
+        }
+    }
+    return best_min_perm;
+}
+
 class CrossStitch {
 public:
     vector<string> embroider(vector<string> pattern) {
@@ -307,31 +328,18 @@ public:
             vector<Stitch> stitches = extract_stitches(pattern, c);
 
             // search
-            int best_score = 1<<30;
-            vector<Flip> best_min_perm;
-            vector<Stitch> best_stitches;
             double limit = start_time + each_time*(i+1);
-            REP(j, 10){
-                random_shuffle(ALL(stitches));
-                vector<Flip> min_perm = search_min_permutation(stitches);
-                int evaluated = evaluate(stitches, min_perm);
-                if(evaluated < best_score){
-                    best_score = evaluated;
-                    best_min_perm = min_perm;
-                    best_stitches = stitches;
-                }
-                if(get_time() > limit)break;
-            }
-            while(get_time() < limit){
-                optimize_permutation(best_stitches, best_min_perm);
-                int score = evaluate(best_stitches, best_min_perm);
-                if(score==best_score)break;
-                best_score = score;
-            }
+            vector<Flip> best_min_perm = search_by_stitch_swap(stitches, limit);
+            //while(get_time() < limit){
+            //    optimize_permutation(best_stitches, best_min_perm);
+            //    int score = evaluate(best_stitches, best_min_perm);
+            //    if(score==best_score)break;
+            //    best_score = score;
+            //}
             //DEBUG(<< "best: " << best_score);
 
             REP(j, best_min_perm.size()){
-                const Stitch &s = best_stitches[best_min_perm[j].idx];
+                const Stitch &s = stitches[best_min_perm[j].idx];
                 int rev = best_min_perm[j].rev;
                 const P &f = rev ? s.to : s.from;
                 const P &t = rev ? s.from : s.to;
