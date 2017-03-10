@@ -289,7 +289,26 @@ vector<Flip> search_by_stitch_swap(vector<Stitch> &stitches, double limit){
             swap(stitches[a], stitches[b]);
         }
     }
-    DEBUG(<< "best: " << best_score);
+    //DEBUG(<< "best: " << best_score);
+    return best_min_perm;
+}
+
+vector<Flip> search_by_random_shuffle(vector<Stitch> &stitches, double limit){
+    int best_score = 1<<30;
+    vector<Flip> best_min_perm = search_min_permutation(stitches);
+    vector<Stitch> best_stitches = stitches;
+
+    while(get_time() < limit){
+        random_shuffle(ALL(stitches));
+        vector<Flip> min_perm = search_min_permutation(stitches);
+        int score = evaluate(stitches, min_perm);
+        if(score < best_score){
+            best_score = score;
+            best_min_perm = min_perm;
+            best_stitches = stitches;
+        }
+    }
+    stitches = best_stitches;
     return best_min_perm;
 }
 
@@ -301,17 +320,24 @@ public:
 
         vector<char> alphabet = create_alphabet(pattern);
         double each_time = 9.0 / alphabet.size();
-        INFO(<< "S=" << pattern.size());
+        int S = pattern.size();
+        INFO(<< "S=" << S);
         INFO(<< "C=" << alphabet.size());
         REP(i, alphabet.size()){
             char c = alphabet[i];
             ret.push_back(string(1, c));
-            DEBUG(<< "start search: " << c << endl);
+            //DEBUG(<< "start search: " << c);
             vector<Stitch> stitches = extract_stitches(pattern, c);
 
             // search
             double limit = start_time + each_time*(i+1);
-            vector<Flip> best_min_perm = search_by_stitch_swap(stitches, limit);
+            vector<Flip> best_min_perm;
+            if(20<=S && S < 70){
+                best_min_perm = search_by_stitch_swap(stitches, limit);
+            }else{
+                best_min_perm = search_by_random_shuffle(stitches, limit);
+            }
+
             //while(get_time() < limit){
             //    optimize_permutation(best_stitches, best_min_perm);
             //    int score = evaluate(best_stitches, best_min_perm);
