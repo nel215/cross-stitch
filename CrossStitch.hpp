@@ -32,6 +32,17 @@ double get_time(){
 	return tv.tv_sec + tv.tv_usec*1e-6;
 }
 
+unsigned int xor128() {
+  static unsigned int x = 123456789;
+  static unsigned int y = 362436069;
+  static unsigned int z = 521288629;
+  static unsigned int w = 88675123;
+
+  unsigned int t = x ^ (x << 11);
+  x = y; y = z; z = w;
+  return w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+}
+
 string to_string(int r, int c){
     ostringstream oss;
     oss << r << " " << c;
@@ -275,8 +286,8 @@ vector<Flip> search_by_stitch_swap(vector<Stitch> &stitches, double limit){
     int best_score = 1<<30;
     vector<Flip> best_min_perm = search_min_permutation(stitches);
     while(get_time() < limit){
-        int a = rand()%stitches.size();
-        int b = rand()%stitches.size();
+        int a = xor128()%stitches.size();
+        int b = xor128()%stitches.size();
         if(a==b)continue;
         swap(stitches[a], stitches[b]);
         vector<Flip> min_perm = search_min_permutation(stitches);
