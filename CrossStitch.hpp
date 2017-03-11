@@ -352,7 +352,7 @@ public:
             // search
             double limit = start_time + each_time*(i+1);
             vector<Flip> best_min_perm;
-            if(20<=S && S < 70){
+            if(S < 70){
                 best_min_perm = search_by_stitch_swap(stitches, limit);
             }else{
                 best_min_perm = search_by_random_shuffle(stitches, limit);
