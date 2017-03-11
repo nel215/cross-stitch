@@ -43,6 +43,11 @@ unsigned int xor128() {
   return w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
 }
 
+double uniform(){
+    const unsigned int UINT_MAX = (unsigned int)(-1);
+    return 1.0 * xor128() / UINT_MAX;
+}
+
 string to_string(int r, int c){
     ostringstream oss;
     oss << r << " " << c;
@@ -283,19 +288,23 @@ void optimize_permutation(vector<Stitch> &stitches, vector<Flip> &perm){
 }
 
 vector<Flip> search_by_stitch_swap(vector<Stitch> &stitches, double limit){
-    int best_score = 1<<30;
     vector<Flip> best_min_perm = search_min_permutation(stitches);
-    while(get_time() < limit){
+    int best_score = evaluate(stitches, best_min_perm);
+    for(;;){
+        double now = get_time();
+        if(now > limit)break;
+        double T = (limit - now) * best_score * 0.01;
         int a = xor128()%stitches.size();
         int b = xor128()%stitches.size();
         if(a==b)continue;
         swap(stitches[a], stitches[b]);
         vector<Flip> min_perm = search_min_permutation(stitches);
         int score = evaluate(stitches, min_perm);
-        if(score < best_score){
+        double p = min(1.0, exp((best_score-score)/T));
+        if(p > uniform()){
+            //if(score>best_score)DEBUG(<< "p: " << p << ",q:" << q);
             best_score = score;
             best_min_perm = min_perm;
-            //DEBUG(<< "update: " << score);
         }else{
             swap(stitches[a], stitches[b]);
         }
