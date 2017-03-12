@@ -95,19 +95,6 @@ struct Stitch{
     }
 };
 
-struct Flip{
-    int idx;
-    void init(int i){
-        this->idx = i;
-    }
-    Flip(int i){
-        init(i);
-    }
-    Flip(){
-        init(0);
-    }
-};
-
 vector<char> create_alphabet(const vector<string> &pattern){
     vector<char> res;
     int ps = pattern.size();
@@ -141,27 +128,27 @@ int sq_dist(const P &a, const P &b){
     return sq_dist(a.y, a.x, b.y, b.x);
 }
 
-vector<Flip> search_min_permutation(vector<Stitch> &stitches){
-    list<Flip> res; // idx, rev
-    res.push_back(Flip(0));
+vector<int> search_min_permutation(vector<Stitch> &stitches){
+    list<int> res;
+    res.push_back(0);
     for(int i=1; i<(int)stitches.size(); i++){
         int best_score = 1<<30;
-        list<Flip>::iterator best_it = res.begin();
+        list<int>::iterator best_it = res.begin();
         int best_rev = 0;
 
         REP(r, 2){
             stitches[i].rev = r;
             const P *mid_to = stitches[i].get_to();
             const P *mid_from = stitches[i].get_from();
-            list<Flip>::iterator prev = res.end();
-            for(list<Flip>::iterator it=res.begin();; it++){
+            list<int>::iterator prev = res.end();
+            for(list<int>::iterator it=res.begin();; it++){
                 P *from = NULL;
                 P *to = NULL;
                 int dist = 0;
                 bool valid = true;
                 if(prev!=res.end()){
                     // prev to target
-                    int pi = prev->idx;
+                    int pi = *prev;
                     from = stitches[pi].get_to();
                     int from_d = sq_dist(*from, *mid_from);
                     valid &= from_d > 0;
@@ -169,7 +156,7 @@ vector<Flip> search_min_permutation(vector<Stitch> &stitches){
                 }
                 if(it!=res.end()){
                     // target to current
-                    int ci = it->idx;
+                    int ci = *it;
                     to = stitches[ci].get_from();
                     int to_d = sq_dist(*mid_to, *to);
                     valid &= to_d > 0;
@@ -188,17 +175,17 @@ vector<Flip> search_min_permutation(vector<Stitch> &stitches){
             }
         }
         stitches[i].rev = best_rev;
-        res.insert(best_it, Flip(i));
+        res.insert(best_it, i);
     }
 
-    return vector<Flip>(ALL(res));
+    return vector<int>(ALL(res));
 }
 
-int evaluate(vector<Stitch> &stitches, const vector<Flip> &min_perm){
+int evaluate(vector<Stitch> &stitches, const vector<int> &min_perm){
     int res = 0;
     P *prev = NULL;
     REP(i, min_perm.size()){
-        Stitch &s = stitches[min_perm[i].idx];
+        Stitch &s = stitches[min_perm[i]];
         P *f = s.get_from();
         P *t = s.get_to();
         if(prev!=NULL){
@@ -209,8 +196,8 @@ int evaluate(vector<Stitch> &stitches, const vector<Flip> &min_perm){
     return res;
 }
 
-vector<Flip> search_by_stitch_swap(vector<Stitch> &stitches, double limit){
-    vector<Flip> best_min_perm = search_min_permutation(stitches);
+vector<int> search_by_stitch_swap(vector<Stitch> &stitches, double limit){
+    vector<int> best_min_perm = search_min_permutation(stitches);
     int best_score = evaluate(stitches, best_min_perm);
     for(;;){
         double now = get_time();
@@ -219,8 +206,9 @@ vector<Flip> search_by_stitch_swap(vector<Stitch> &stitches, double limit){
         int a = xor128()%stitches.size();
         int b = xor128()%stitches.size();
         if(a==b)continue;
+        vector<Stitch> old = stitches;
         swap(stitches[a], stitches[b]);
-        vector<Flip> min_perm = search_min_permutation(stitches);
+        vector<int> min_perm = search_min_permutation(stitches);
         int score = evaluate(stitches, min_perm);
         double p = min(1.0, exp((best_score-score)/T));
         if(p > uniform()){
@@ -228,21 +216,21 @@ vector<Flip> search_by_stitch_swap(vector<Stitch> &stitches, double limit){
             best_score = score;
             best_min_perm = min_perm;
         }else{
-            swap(stitches[a], stitches[b]);
+            stitches = old;
         }
     }
     //DEBUG(<< "best: " << best_score);
     return best_min_perm;
 }
 
-vector<Flip> search_by_random_shuffle(vector<Stitch> &stitches, double limit){
+vector<int> search_by_random_shuffle(vector<Stitch> &stitches, double limit){
     int best_score = 1<<30;
-    vector<Flip> best_min_perm = search_min_permutation(stitches);
+    vector<int> best_min_perm = search_min_permutation(stitches);
     vector<Stitch> best_stitches = stitches;
 
     while(get_time() < limit){
         random_shuffle(ALL(stitches));
-        vector<Flip> min_perm = search_min_permutation(stitches);
+        vector<int> min_perm = search_min_permutation(stitches);
         int score = evaluate(stitches, min_perm);
         if(score < best_score){
             best_score = score;
@@ -273,7 +261,7 @@ public:
 
             // search
             double limit = start_time + each_time*(i+1);
-            vector<Flip> best_min_perm;
+            vector<int> best_min_perm;
             if(S < 70){
                 best_min_perm = search_by_stitch_swap(stitches, limit);
             }else{
@@ -281,8 +269,8 @@ public:
             }
 
             REP(j, best_min_perm.size()){
-                const Stitch &s = stitches[best_min_perm[j].idx];
-                int rev = stitches[best_min_perm[j].idx].rev;
+                const Stitch &s = stitches[best_min_perm[j]];
+                int rev = stitches[best_min_perm[j]].rev;
                 const P &f = rev ? s.to : s.from;
                 const P &t = rev ? s.from : s.to;
                 ret.push_back(to_string(f.y, f.x));
