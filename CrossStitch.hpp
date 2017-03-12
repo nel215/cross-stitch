@@ -269,12 +269,11 @@ public:
             }
 
             REP(j, best_min_perm.size()){
-                const Stitch &s = stitches[best_min_perm[j]];
-                int rev = stitches[best_min_perm[j]].rev;
-                const P &f = rev ? s.to : s.from;
-                const P &t = rev ? s.from : s.to;
-                ret.push_back(to_string(f.y, f.x));
-                ret.push_back(to_string(t.y, t.x));
+                Stitch &s = stitches[best_min_perm[j]];
+                P *f = s.get_from();
+                P *t = s.get_to();
+                ret.push_back(to_string(f->y, f->x));
+                ret.push_back(to_string(t->y, t->x));
             }
         }
         return ret;
