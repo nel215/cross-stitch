@@ -128,36 +128,35 @@ int sq_dist(const P &a, const P &b){
     return sq_dist(a.y, a.x, b.y, b.x);
 }
 
-vector<int> search_min_permutation(vector<Stitch> &stitches){
-    list<int> res;
-    res.push_back(0);
+list<Stitch> search_min_permutation(const vector<Stitch> &stitches){
+    list<Stitch> res;
+    res.push_back(stitches[0]);
     for(int i=1; i<(int)stitches.size(); i++){
         int best_score = 1<<30;
-        list<int>::iterator best_it = res.begin();
+        list<Stitch>::iterator best_it = res.begin();
         int best_rev = 0;
 
+        Stitch s = stitches[i];
         REP(r, 2){
-            stitches[i].rev = r;
-            const P *mid_to = stitches[i].get_to();
-            const P *mid_from = stitches[i].get_from();
-            list<int>::iterator prev = res.end();
-            for(list<int>::iterator it=res.begin();; it++){
+            s.rev = r;
+            const P *mid_to = s.get_to();
+            const P *mid_from = s.get_from();
+            list<Stitch>::iterator prev = res.end();
+            for(list<Stitch>::iterator it=res.begin();; it++){
                 P *from = NULL;
                 P *to = NULL;
                 int dist = 0;
                 bool valid = true;
                 if(prev!=res.end()){
                     // prev to target
-                    int pi = *prev;
-                    from = stitches[pi].get_to();
+                    from = prev->get_to();
                     int from_d = sq_dist(*from, *mid_from);
                     valid &= from_d > 0;
                     dist += from_d;
                 }
                 if(it!=res.end()){
                     // target to current
-                    int ci = *it;
-                    to = stitches[ci].get_from();
+                    to = it->get_from();
                     int to_d = sq_dist(*mid_to, *to);
                     valid &= to_d > 0;
                     dist += to_d;
@@ -174,20 +173,19 @@ vector<int> search_min_permutation(vector<Stitch> &stitches){
                 prev = it;
             }
         }
-        stitches[i].rev = best_rev;
-        res.insert(best_it, i);
+        s.rev = best_rev;
+        res.insert(best_it, s);
     }
 
-    return vector<int>(ALL(res));
+    return res;
 }
 
-int evaluate(vector<Stitch> &stitches, const vector<int> &min_perm){
+int evaluate(list<Stitch> &stitches){
     int res = 0;
     P *prev = NULL;
-    REP(i, min_perm.size()){
-        Stitch &s = stitches[min_perm[i]];
-        P *f = s.get_from();
-        P *t = s.get_to();
+    for(list<Stitch>::iterator it = stitches.begin(); it != stitches.end(); it++){
+        P *f = it->get_from();
+        P *t = it->get_to();
         if(prev!=NULL){
             res += sq_dist(*prev, *f);
         }
@@ -196,50 +194,47 @@ int evaluate(vector<Stitch> &stitches, const vector<int> &min_perm){
     return res;
 }
 
-vector<int> search_by_stitch_swap(vector<Stitch> &stitches, double limit){
-    vector<int> best_min_perm = search_min_permutation(stitches);
-    int best_score = evaluate(stitches, best_min_perm);
+vector<Stitch> search_by_stitch_swap(vector<Stitch> stitches, double limit){
+    list<Stitch> best_min_perm = search_min_permutation(stitches);
+    int best_score = evaluate(best_min_perm);
+    int n = stitches.size();
     for(;;){
         double now = get_time();
         if(now > limit)break;
         double T = (limit - now) * best_score * 0.01;
-        int a = xor128()%stitches.size();
-        int b = xor128()%stitches.size();
+        int a = xor128()%n;
+        int b = xor128()%n;
         if(a==b)continue;
-        vector<Stitch> old = stitches;
         swap(stitches[a], stitches[b]);
-        vector<int> min_perm = search_min_permutation(stitches);
-        int score = evaluate(stitches, min_perm);
+        list<Stitch> min_perm = search_min_permutation(stitches);
+        int score = evaluate(min_perm);
         double p = min(1.0, exp((best_score-score)/T));
         if(p > uniform()){
             //if(score>best_score)DEBUG(<< "p: " << p << ",q:" << q);
             best_score = score;
             best_min_perm = min_perm;
         }else{
-            stitches = old;
+            swap(stitches[a], stitches[b]);
         }
     }
     //DEBUG(<< "best: " << best_score);
-    return best_min_perm;
+    return vector<Stitch>(ALL(best_min_perm));
 }
 
-vector<int> search_by_random_shuffle(vector<Stitch> &stitches, double limit){
+vector<Stitch> search_by_random_shuffle(vector<Stitch> stitches, double limit){
     int best_score = 1<<30;
-    vector<int> best_min_perm = search_min_permutation(stitches);
-    vector<Stitch> best_stitches = stitches;
+    list<Stitch> best_min_perm = search_min_permutation(stitches);
 
     while(get_time() < limit){
         random_shuffle(ALL(stitches));
-        vector<int> min_perm = search_min_permutation(stitches);
-        int score = evaluate(stitches, min_perm);
+        list<Stitch> min_perm = search_min_permutation(stitches);
+        int score = evaluate(min_perm);
         if(score < best_score){
             best_score = score;
             best_min_perm = min_perm;
-            best_stitches = stitches;
         }
     }
-    stitches = best_stitches;
-    return best_min_perm;
+    return vector<Stitch>(ALL(best_min_perm));
 }
 
 class CrossStitch {
@@ -261,7 +256,7 @@ public:
 
             // search
             double limit = start_time + each_time*(i+1);
-            vector<int> best_min_perm;
+            vector<Stitch> best_min_perm;
             if(S < 70){
                 best_min_perm = search_by_stitch_swap(stitches, limit);
             }else{
@@ -269,7 +264,7 @@ public:
             }
 
             REP(j, best_min_perm.size()){
-                Stitch &s = stitches[best_min_perm[j]];
+                Stitch &s = best_min_perm[j];
                 P *f = s.get_from();
                 P *t = s.get_to();
                 ret.push_back(to_string(f->y, f->x));

@@ -16,10 +16,10 @@ void test_extract_stitches(){
     vector<Stitch> stitches = extract_stitches(p, 'a');
     assert(stitches.size()==200);
 
-    vector<int> min_perm = search_min_permutation(stitches);
+    list<Stitch> min_perm = search_min_permutation(stitches);
     assert(min_perm.size()==stitches.size());
 
-    evaluate(stitches, min_perm);
+    evaluate(min_perm);
 }
 
 int main(){
