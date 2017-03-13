@@ -99,7 +99,7 @@ struct Stitch{
     }
 };
 
-int sq_dist(int ay, int ax, int by, int bx){
+inline int sq_dist(int ay, int ax, int by, int bx){
     int dy = ay - by;
     int dx = ax - bx;
     return dy*dy + dx*dx;
