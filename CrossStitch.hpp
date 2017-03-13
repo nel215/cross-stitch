@@ -260,11 +260,10 @@ int evaluate(list<Stitch> &stitches){
     P *prev = NULL;
     for(list<Stitch>::iterator it = stitches.begin(); it != stitches.end(); it++){
         P *f = it->get_from();
-        P *t = it->get_to();
         if(prev!=NULL){
             res += sq_dist(*prev, *f);
         }
-        prev = t;
+        prev = it->get_to();
     }
     return res;
 }
