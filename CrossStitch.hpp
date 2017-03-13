@@ -77,18 +77,19 @@ struct P{
 
 struct Stitch{
     P from, to;
-    int rev, color;
-    void init(P f, P t, int c, int r){
+    int rev, color, hub;
+    void init(P f, P t, int c, int h, int r){
         this->from = f;
         this->to = t;
         this->rev = r;
         this->color = c;
+        this->hub = h;
     }
     Stitch(){
-        init(P(), P(), -1, 0);
+        init(P(), P(), -1, 0, 0);
     }
-    Stitch(P f, P t, int c){
-        init(f, t, c, 0);
+    Stitch(P f, P t, int c, int h){
+        init(f, t, c, h, 0);
     }
     P* get_from(){
         return rev ? &to : &from;
@@ -97,6 +98,16 @@ struct Stitch{
         return rev ? &from : &to;
     }
 };
+
+int sq_dist(int ay, int ax, int by, int bx){
+    int dy = ay - by;
+    int dx = ax - bx;
+    return dy*dy + dx*dx;
+}
+
+int sq_dist(const P &a, const P &b){
+    return sq_dist(a.y, a.x, b.y, b.x);
+}
 
 vector<char> create_alphabet(const vector<string> &pattern){
     vector<char> res;
@@ -142,24 +153,43 @@ vector<Stitch> extract_stitches(const vector<string> &pattern, const char c){
         color_count++;
     }
 
+    vector<vector<P> > color_cells(color_count, vector<P>());
+    REP(y, ps)REP(x, ps){
+        int p = y*ps+x;
+        if(color[p]==-1)continue;
+        color_cells[color[p]].push_back(P(y, x));
+    }
+
+    vector<int> is_hub(ps*ps, 0);
+    REP(c1, color_count){
+        for(int c2=c1+1; c2<color_count; c2++){
+            int best = INF;
+            P a, b;
+            REP(i, color_cells[c1].size()){
+                REP(j, color_cells[c2].size()){
+                    int d = sq_dist(color_cells[c1][i], color_cells[c2][j]);
+                    if(d<best){
+                        best = d;
+                        a = color_cells[c1][i];
+                        b = color_cells[c2][j];
+                    }
+                }
+            }
+            //cerr << c1 << " to " << c2 << " best " << best << endl;
+            is_hub[a.y*ps+a.x] = 1;
+            is_hub[b.y*ps+b.x] = 1;
+        }
+    }
+
+
     // extract
     vector<Stitch> res;
     REP(y, ps)REP(x, ps){
         if(pattern[y][x]!=c)continue;
-        res.push_back(Stitch(P(y, x), P(y+1, x+1), color[y*ps+x]));
-        res.push_back(Stitch(P(y+1, x), P(y, x+1), color[y*ps+x]));
+        res.push_back(Stitch(P(y, x), P(y+1, x+1), color[y*ps+x], is_hub[y*ps+x]));
+        res.push_back(Stitch(P(y+1, x), P(y, x+1), color[y*ps+x], is_hub[y*ps+x]));
     }
     return res;
-}
-
-int sq_dist(int ay, int ax, int by, int bx){
-    int dy = ay - by;
-    int dx = ax - bx;
-    return dy*dy + dx*dx;
-}
-
-int sq_dist(const P &a, const P &b){
-    return sq_dist(a.y, a.x, b.y, b.x);
 }
 
 list<Stitch> search_min_permutation(const vector<Stitch> &stitches){
