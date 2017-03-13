@@ -77,17 +77,18 @@ struct P{
 
 struct Stitch{
     P from, to;
-    int rev;
-    void init(P f, P t, int r){
+    int rev, color;
+    void init(P f, P t, int c, int r){
         this->from = f;
         this->to = t;
         this->rev = r;
+        this->color = c;
     }
     Stitch(){
-        init(P(), P(), 0);
+        init(P(), P(), -1, 0);
     }
-    Stitch(P f, P t){
-        init(f, t, 0);
+    Stitch(P f, P t, int c){
+        init(f, t, c, 0);
     }
     P* get_from(){
         return rev ? &to : &from;
@@ -111,11 +112,42 @@ vector<char> create_alphabet(const vector<string> &pattern){
 
 vector<Stitch> extract_stitches(const vector<string> &pattern, const char c){
     int ps = pattern.size();
+
+    // draw same region with same color
+    vector<int> color(ps*ps, -1);
+    int color_count = 0;
+    REP(y, ps)REP(x, ps){
+        if(pattern[y][x]!=c)continue;
+        if(color[y*ps+x]!=-1)continue;
+        stack<int> st;
+        st.push(y*ps + x);
+        while(!st.empty()){
+            int cp = st.top();st.pop();
+            color[cp] = color_count;
+            int cy = cp / ps;
+            int cx = cp % ps;
+            const int DY[4] = {-1, 0, 1, 0};
+            const int DX[4] = {0, -1, 0, 1};
+            REP(i, 4){
+                int ny = cy + DY[i];
+                int nx = cx + DX[i];
+                if(ny<0 || nx<0 || ny>=ps || nx>=ps)continue;
+                if(pattern[ny][nx]!=c)continue;
+
+                int np = ny*ps + nx;
+                if(color[np]!=-1)continue;
+                st.push(np);
+            }
+        }
+        color_count++;
+    }
+
+    // extract
     vector<Stitch> res;
     REP(y, ps)REP(x, ps){
         if(pattern[y][x]!=c)continue;
-        res.push_back(Stitch(P(y, x), P(y+1, x+1)));
-        res.push_back(Stitch(P(y+1, x), P(y, x+1)));
+        res.push_back(Stitch(P(y, x), P(y+1, x+1), color[y*ps+x]));
+        res.push_back(Stitch(P(y+1, x), P(y, x+1), color[y*ps+x]));
     }
     return res;
 }
