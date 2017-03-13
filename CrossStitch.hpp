@@ -329,11 +329,15 @@ int get_dist(int idx, vector<Stitch> &stitches){
     return res;
 }
 
-void optimize(vector<Stitch> &stitches){
+inline void optimize(vector<Stitch> &stitches){
     const int n = stitches.size();
-    int a = xor128()%n;
-    int b = xor128()%n;
-    while(a==b)b = xor128()%n;
+    vector<double> sum(n+1);
+    REP(i, n)sum[i+1] = sum[i] + get_dist(i, stitches);
+    int a = upper_bound(ALL(sum), uniform()*sum[n]) - sum.begin();
+    int b = upper_bound(ALL(sum), uniform()*sum[n]) - sum.begin();
+    while(a==b)b = upper_bound(ALL(sum), uniform()*sum[n]) - sum.begin();
+    a--;b--;
+    if(a<0 || a==n)cerr << "error" << endl;
     //list<Stitch> now_l = list<Stitch>(ALL(stitches));
     //int now_e = evaluate(now_l);
     int now = get_dist(a, stitches) + get_dist(b, stitches);
@@ -358,16 +362,16 @@ public:
         vector<char> alphabet = create_alphabet(pattern);
         double each_time = 9.0 / alphabet.size();
         int S = pattern.size();
+        int C = alphabet.size();
         INFO(<< "S=" << S);
-        INFO(<< "C=" << alphabet.size());
-        REP(i, alphabet.size()){
+        INFO(<< "C=" << C);
+        REP(i, C){
             char c = alphabet[i];
-            ret.push_back(string(1, c));
             //DEBUG(<< "start search: " << c);
             vector<Stitch> stitches = extract_stitches(pattern, c);
-
+            ret.push_back(string(1, c));
             // search
-            double limit = start_time + 1.0*each_time*(i+1);
+            double limit = start_time + each_time*(i+0.5);
             vector<Stitch> best_min_perm;
             if(S < 70){
                 best_min_perm = search_by_stitch_swap(stitches, limit);
@@ -375,10 +379,12 @@ public:
                 best_min_perm = search_by_random_shuffle(stitches, limit);
             }
 
-            //limit = start_time + 1.0*each_time*(i+1);
-            //while(get_time() < limit){
-            //    optimize(best_min_perm);
-            //}
+            limit = start_time + each_time*(i+1);
+            while(get_time() < limit){
+                REP(i, 10){
+                    optimize(best_min_perm);
+                }
+            }
 
             REP(j, best_min_perm.size()){
                 Stitch &s = best_min_perm[j];
