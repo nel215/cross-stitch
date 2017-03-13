@@ -193,52 +193,63 @@ vector<Stitch> extract_stitches(const vector<string> &pattern, const char c){
 }
 
 list<Stitch> search_min_permutation(const vector<Stitch> &stitches){
+    int n = stitches.size();
     list<Stitch> res;
-    res.push_back(stitches[0]);
-    for(int i=1; i<(int)stitches.size(); i++){
-        int best_score = 1<<30;
-        list<Stitch>::iterator best_it = res.begin();
-        int best_rev = 0;
-
-        Stitch s = stitches[i];
-        REP(r, 2){
-            s.rev = r;
-            const P *mid_to = s.get_to();
-            const P *mid_from = s.get_from();
-            list<Stitch>::iterator prev = res.end();
-            for(list<Stitch>::iterator it=res.begin();; it++){
-                P *from = NULL;
-                P *to = NULL;
-                int dist = 0;
-                bool valid = true;
-                if(prev!=res.end()){
-                    // prev to target
-                    from = prev->get_to();
-                    int from_d = sq_dist(*from, *mid_from);
-                    valid &= from_d > 0;
-                    dist += from_d;
-                }
-                if(it!=res.end()){
-                    // target to current
-                    to = it->get_from();
-                    int to_d = sq_dist(*mid_to, *to);
-                    valid &= to_d > 0;
-                    dist += to_d;
-                }
-                if(from != NULL && to != NULL){
-                    dist -= sq_dist(*from, *to);
-                }
-                if(valid && best_score > dist){
-                    best_score = dist;
-                    best_it = it;
-                    best_rev = r;
-                }
-                if(it==res.end())break;
-                prev = it;
+    vector<int> used(n, 0);
+    REP(hub, 2){
+        for(int i=0; i<(int)stitches.size(); i++){
+            if(stitches[i].hub==hub)continue;
+            if(used[i])continue;
+            used[i] = 1;
+            if(res.size()==0){
+                res.push_back(stitches[i]);
+                continue;
             }
+
+            int best_score = 1<<30;
+            list<Stitch>::iterator best_it = res.begin();
+            int best_rev = 0;
+
+            Stitch s = stitches[i];
+            REP(r, 2){
+                s.rev = r;
+                const P *mid_to = s.get_to();
+                const P *mid_from = s.get_from();
+                list<Stitch>::iterator prev = res.end();
+                for(list<Stitch>::iterator it=res.begin();; it++){
+                    P *from = NULL;
+                    P *to = NULL;
+                    int dist = 0;
+                    bool valid = true;
+                    if(prev!=res.end()){
+                        // prev to target
+                        from = prev->get_to();
+                        int from_d = sq_dist(*from, *mid_from);
+                        valid &= from_d > 0;
+                        dist += from_d;
+                    }
+                    if(it!=res.end()){
+                        // target to current
+                        to = it->get_from();
+                        int to_d = sq_dist(*mid_to, *to);
+                        valid &= to_d > 0;
+                        dist += to_d;
+                    }
+                    if(from != NULL && to != NULL){
+                        dist -= sq_dist(*from, *to);
+                    }
+                    if(valid && best_score > dist){
+                        best_score = dist;
+                        best_it = it;
+                        best_rev = r;
+                    }
+                    if(it==res.end())break;
+                    prev = it;
+                }
+            }
+            s.rev = best_rev;
+            res.insert(best_it, s);
         }
-        s.rev = best_rev;
-        res.insert(best_it, s);
     }
 
     return res;
