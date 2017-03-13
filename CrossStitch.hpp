@@ -26,6 +26,8 @@
 
 using namespace std;
 
+const int INF = 1<<28;
+
 double get_time(){
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
@@ -237,6 +239,44 @@ vector<Stitch> search_by_random_shuffle(vector<Stitch> stitches, double limit){
     return vector<Stitch>(ALL(best_min_perm));
 }
 
+int get_dist(int idx, vector<Stitch> &stitches){
+    const int n = stitches.size();
+    const int prev = idx-1;
+    const int next = idx+1;
+    int res = 0;
+    if(prev>=0){
+        int d = sq_dist(*stitches[prev].get_to(), *stitches[idx].get_from());
+        if(d==0)return INF;
+        res += d;
+    }
+    if(next<n){
+        int d = sq_dist(*stitches[idx].get_to(), *stitches[next].get_from());
+        if(d==0)return INF;
+        res += d;
+    }
+    return res;
+}
+
+void optimize(vector<Stitch> &stitches){
+    const int n = stitches.size();
+    int a = xor128()%n;
+    int b = xor128()%n;
+    while(a==b)b = xor128()%n;
+    //list<Stitch> now_l = list<Stitch>(ALL(stitches));
+    //int now_e = evaluate(now_l);
+    int now = get_dist(a, stitches) + get_dist(b, stitches);
+    swap(stitches[a], stitches[b]);
+    //list<Stitch> next_l = list<Stitch>(ALL(stitches));
+    //int next_e = evaluate(next_l);
+    int next = get_dist(a, stitches) + get_dist(b, stitches);
+    if(next > now){
+        swap(stitches[a], stitches[b]);
+    }else{
+        //DEBUG(<< now_e << "," << now << "->" << next_e << "," << next);
+        //DEBUG(<< now << "->" << next);
+    }
+}
+
 class CrossStitch {
 public:
     vector<string> embroider(vector<string> pattern) {
@@ -255,13 +295,18 @@ public:
             vector<Stitch> stitches = extract_stitches(pattern, c);
 
             // search
-            double limit = start_time + each_time*(i+1);
+            double limit = start_time + 1.0*each_time*(i+1);
             vector<Stitch> best_min_perm;
             if(S < 70){
                 best_min_perm = search_by_stitch_swap(stitches, limit);
             }else{
                 best_min_perm = search_by_random_shuffle(stitches, limit);
             }
+
+            //limit = start_time + 1.0*each_time*(i+1);
+            //while(get_time() < limit){
+            //    optimize(best_min_perm);
+            //}
 
             REP(j, best_min_perm.size()){
                 Stitch &s = best_min_perm[j];
