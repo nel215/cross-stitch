@@ -200,8 +200,30 @@ vector<Stitch> extract_stitches(const vector<string> &pattern, const char c){
                 }
             }
             //cerr << c1 << " to " << c2 << " best " << best << endl;
-            is_hub[a.y*ps+a.x] = 1;
-            is_hub[b.y*ps+b.x] = 1;
+            is_hub[a.y*ps+a.x] = 2;
+            is_hub[b.y*ps+b.x] = 2;
+            const int DY[4] = {-1, 0, 1, 0};
+            const int DX[4] = {0, -1, 0, 1};
+            REP(i, 4){
+                // a
+                int ay = a.y + DY[i];
+                int ax = a.x + DX[i];
+                if(ay<0 || ax<0 || ay>=ps || ax>=ps)continue;
+                if(pattern[ay][ax]!=c)continue;
+
+                int ap = ay*ps + ax;
+                if(is_hub[ap]!=0)continue;
+                is_hub[ap]=1;
+                // b
+                int by = b.y + DY[i];
+                int bx = b.x + DX[i];
+                if(by<0 || bx<0 || by>=ps || bx>=ps)continue;
+                if(pattern[by][bx]!=c)continue;
+
+                int bp = by*ps + bx;
+                if(is_hub[bp]!=0)continue;
+                is_hub[bp]=1;
+            }
         }
     }
 
@@ -220,9 +242,9 @@ list<Stitch> search_min_permutation(const vector<Stitch> &stitches){
     int n = stitches.size();
     list<Stitch> res;
     vector<int> used(n, 0);
-    REP(hub, 2){
+    for(int hub=2; hub>=0; hub--){
         for(int i=0; i<(int)stitches.size(); i++){
-            if(stitches[i].hub==hub)continue;
+            if(stitches[i].hub!=hub)continue;
             if(used[i])continue;
             used[i] = 1;
             if(res.size()==0){
