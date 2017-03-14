@@ -324,12 +324,14 @@ vector<Stitch> search_by_random_shuffle(vector<Stitch> stitches, double limit){
     list<Stitch> best_min_perm = search_min_permutation(stitches);
 
     while(get_time() < limit){
-        random_shuffle(ALL(stitches));
-        list<Stitch> min_perm = search_min_permutation(stitches);
-        int score = evaluate(min_perm);
-        if(score < best_score){
-            best_score = score;
-            best_min_perm = min_perm;
+        REP(_, 10){
+            random_shuffle(ALL(stitches));
+            list<Stitch> min_perm = search_min_permutation(stitches);
+            int score = evaluate(min_perm);
+            if(score < best_score){
+                best_score = score;
+                best_min_perm = min_perm;
+            }
         }
     }
     return vector<Stitch>(ALL(best_min_perm));
@@ -368,7 +370,7 @@ void optimize(vector<Stitch> &stitches, const double limit){
     BIT bit(n);
     REP(i, n)bit.add(i+1, get_dist(i, stitches));
     while(get_time() < limit){
-        REP(_, 100){
+        REP(_, 1000){
             int sum = bit.sum(n);
 
             int a = upper_bound(uniform()*sum, bit);
