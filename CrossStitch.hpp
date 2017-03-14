@@ -419,7 +419,7 @@ public:
         vector<string> ret;
 
         vector<char> alphabet = create_alphabet(pattern);
-        double each_time = 9.0 / alphabet.size();
+        double each_time = 9.5 / alphabet.size();
         int S = pattern.size();
         int C = alphabet.size();
         INFO(<< "S=" << S);
@@ -430,7 +430,7 @@ public:
             vector<Stitch> stitches = extract_stitches(pattern, c);
             ret.push_back(string(1, c));
             // search
-            double limit = start_time + each_time*(i+0.7);
+            double limit = start_time + each_time*(i+0.8);
             vector<Stitch> best_min_perm;
             if(S < 70){
                 best_min_perm = search_by_stitch_swap(stitches, limit);
