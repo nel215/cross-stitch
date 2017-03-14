@@ -373,8 +373,6 @@ inline void optimize(vector<Stitch> &stitches, BIT &bit){
     while(a==b)b = upper_bound(uniform()*sum, bit);
     //if(a<0 || a>=n)cerr << "error" << endl;
     //if(b<0 || b>=n)cerr << "error" << endl;
-    //list<Stitch> now_l = list<Stitch>(ALL(stitches));
-    //int now_e = evaluate(now_l);
     int now_a = get_dist(a, stitches);
     int now_b = get_dist(b, stitches);
     //cerr << now_a << "," << now_b << endl;
@@ -406,8 +404,6 @@ inline void optimize(vector<Stitch> &stitches, BIT &bit){
         stitches[b].rev = best_br;
         bit.add(a+1, best_a - now_a);
         bit.add(b+1, best_b - now_b);
-        //DEBUG(<< now_e << "," << now << "->" << next_e << "," << next);
-        //DEBUG(<< bit.sum(n));
     }
 }
 
@@ -440,10 +436,7 @@ public:
             limit = start_time + each_time*(i+1);
             int n = stitches.size();
             BIT bit(n);
-            REP(i, n){
-                int d = get_dist(i, best_min_perm);
-                bit.add(i+1, d);
-            }
+            REP(i, n)bit.add(i+1, get_dist(i, best_min_perm));
             while(get_time() < limit){
                 REP(i, 100){
                     optimize(best_min_perm, bit);
