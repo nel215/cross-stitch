@@ -56,6 +56,30 @@ string to_string(int r, int c){
     return oss.str();
 }
 
+class BIT{
+    vector<int> data;
+public:
+    int size;
+    BIT(int size){
+        this->size = size;
+        this->data.assign(size+1, 0);
+    }
+    void add(int i, int v){
+        while(i<=this->size){
+            this->data[i] += v;
+            i += (i&-i);
+        }
+    }
+    int sum(int i) const{
+        int res = 0;
+        while(i>0){
+            res += data[i];
+            i -= (i&-i);
+        }
+        return res;
+    }
+};
+
 struct P{
     int y, x;
     void init(int y, int x){
@@ -329,27 +353,45 @@ int get_dist(int idx, vector<Stitch> &stitches){
     return res;
 }
 
-inline void optimize(vector<Stitch> &stitches){
+int upper_bound(double v, const BIT &bit){
+    int lb=0, ub=bit.size;
+    while(ub-lb>1){
+        int mid = (lb+ub)>>1;
+        if(bit.sum(mid+1)<v)lb = mid;
+        else ub = mid;
+    }
+    return lb;
+}
+
+inline void optimize(vector<Stitch> &stitches, BIT &bit){
     const int n = stitches.size();
-    vector<double> sum(n+1);
-    REP(i, n)sum[i+1] = sum[i] + get_dist(i, stitches);
-    int a = upper_bound(ALL(sum), uniform()*sum[n]) - sum.begin();
-    int b = upper_bound(ALL(sum), uniform()*sum[n]) - sum.begin();
-    while(a==b)b = upper_bound(ALL(sum), uniform()*sum[n]) - sum.begin();
-    a--;b--;
-    if(a<0 || a==n)cerr << "error" << endl;
+    if(n==2)return;
+    int sum = bit.sum(n);
+
+    int a = upper_bound(uniform()*sum, bit);
+    int b = upper_bound(uniform()*sum, bit);
+    while(a==b)b = upper_bound(uniform()*sum, bit);
+    //if(a<0 || a>=n)cerr << "error" << endl;
+    //if(b<0 || b>=n)cerr << "error" << endl;
     //list<Stitch> now_l = list<Stitch>(ALL(stitches));
     //int now_e = evaluate(now_l);
-    int now = get_dist(a, stitches) + get_dist(b, stitches);
+    int now_a = get_dist(a, stitches);
+    int now_b = get_dist(b, stitches);
+    //cerr << now_a << "," << now_b << endl;
+    int now = now_a + now_b;
     swap(stitches[a], stitches[b]);
     //list<Stitch> next_l = list<Stitch>(ALL(stitches));
     //int next_e = evaluate(next_l);
-    int next = get_dist(a, stitches) + get_dist(b, stitches);
-    if(next > now){
+    int next_a = get_dist(a, stitches);
+    int next_b = get_dist(b, stitches);
+    int next = next_a + next_b;
+    if(next >= now){
         swap(stitches[a], stitches[b]);
     }else{
+        bit.add(a+1, next_a - now_a);
+        bit.add(b+1, next_b - now_b);
         //DEBUG(<< now_e << "," << now << "->" << next_e << "," << next);
-        //DEBUG(<< now << "->" << next);
+        //DEBUG(<< bit.sum(n));
     }
 }
 
@@ -371,7 +413,7 @@ public:
             vector<Stitch> stitches = extract_stitches(pattern, c);
             ret.push_back(string(1, c));
             // search
-            double limit = start_time + each_time*(i+0.5);
+            double limit = start_time + each_time*(i+0.8);
             vector<Stitch> best_min_perm;
             if(S < 70){
                 best_min_perm = search_by_stitch_swap(stitches, limit);
@@ -380,9 +422,15 @@ public:
             }
 
             limit = start_time + each_time*(i+1);
+            int n = stitches.size();
+            BIT bit(n);
+            REP(i, n){
+                int d = get_dist(i, best_min_perm);
+                bit.add(i+1, d);
+            }
             while(get_time() < limit){
-                REP(i, 10){
-                    optimize(best_min_perm);
+                REP(i, 100){
+                    optimize(best_min_perm, bit);
                 }
             }
 
