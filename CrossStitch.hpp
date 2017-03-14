@@ -363,47 +363,52 @@ int upper_bound(double v, const BIT &bit){
     return lb;
 }
 
-inline void optimize(vector<Stitch> &stitches, BIT &bit){
+void optimize(vector<Stitch> &stitches, const double limit){
     const int n = stitches.size();
-    if(n==2)return;
-    int sum = bit.sum(n);
+    BIT bit(n);
+    REP(i, n)bit.add(i+1, get_dist(i, stitches));
+    while(get_time() < limit){
+        REP(_, 100){
+            int sum = bit.sum(n);
 
-    int a = upper_bound(uniform()*sum, bit);
-    int b = upper_bound(uniform()*sum, bit);
-    while(a==b)b = upper_bound(uniform()*sum, bit);
-    //if(a<0 || a>=n)cerr << "error" << endl;
-    //if(b<0 || b>=n)cerr << "error" << endl;
-    int now_a = get_dist(a, stitches);
-    int now_b = get_dist(b, stitches);
-    //cerr << now_a << "," << now_b << endl;
-    int now = now_a + now_b;
-    Stitch as = stitches[a];
-    Stitch bs = stitches[b];
-    swap(stitches[a], stitches[b]);
-    int best_a = 1<<27;
-    int best_b = 1<<27;
-    int best_ar = 0;
-    int best_br = 0;
-    REP(ar, 2)REP(br, 2){
-        stitches[a].rev = ar;
-        stitches[b].rev = br;
-        int next_a = get_dist(a, stitches);
-        int next_b = get_dist(b, stitches);
-        if(best_a+best_b>next_a+next_b){
-            best_a = next_a;
-            best_b = next_b;
-            best_ar = ar;
-            best_br = br;
+            int a = upper_bound(uniform()*sum, bit);
+            int b = upper_bound(uniform()*sum, bit);
+            while(a==b)b = upper_bound(uniform()*sum, bit);
+            //if(a<0 || a>=n)cerr << "error" << endl;
+            //if(b<0 || b>=n)cerr << "error" << endl;
+            int now_a = get_dist(a, stitches);
+            int now_b = get_dist(b, stitches);
+            //cerr << now_a << "," << now_b << endl;
+            int now = now_a + now_b;
+            Stitch as = stitches[a];
+            Stitch bs = stitches[b];
+            swap(stitches[a], stitches[b]);
+            int best_a = 1<<27;
+            int best_b = 1<<27;
+            int best_ar = 0;
+            int best_br = 0;
+            REP(ar, 2)REP(br, 2){
+                stitches[a].rev = ar;
+                stitches[b].rev = br;
+                int next_a = get_dist(a, stitches);
+                int next_b = get_dist(b, stitches);
+                if(best_a+best_b>next_a+next_b){
+                    best_a = next_a;
+                    best_b = next_b;
+                    best_ar = ar;
+                    best_br = br;
+                }
+            }
+            if(best_a+best_b >= now){
+                stitches[a] = as;
+                stitches[b] = bs;
+            }else{
+                stitches[a].rev = best_ar;
+                stitches[b].rev = best_br;
+                bit.add(a+1, best_a - now_a);
+                bit.add(b+1, best_b - now_b);
+            }
         }
-    }
-    if(best_a+best_b >= now){
-        stitches[a] = as;
-        stitches[b] = bs;
-    }else{
-        stitches[a].rev = best_ar;
-        stitches[b].rev = best_br;
-        bit.add(a+1, best_a - now_a);
-        bit.add(b+1, best_b - now_b);
     }
 }
 
@@ -435,13 +440,8 @@ public:
 
             limit = start_time + each_time*(i+1);
             int n = stitches.size();
-            BIT bit(n);
-            REP(i, n)bit.add(i+1, get_dist(i, best_min_perm));
-            while(get_time() < limit){
-                REP(i, 100){
-                    optimize(best_min_perm, bit);
-                }
-            }
+
+            if(n>4)optimize(best_min_perm, limit);
 
             REP(j, best_min_perm.size()){
                 Stitch &s = best_min_perm[j];
