@@ -379,17 +379,33 @@ inline void optimize(vector<Stitch> &stitches, BIT &bit){
     int now_b = get_dist(b, stitches);
     //cerr << now_a << "," << now_b << endl;
     int now = now_a + now_b;
+    Stitch as = stitches[a];
+    Stitch bs = stitches[b];
     swap(stitches[a], stitches[b]);
-    //list<Stitch> next_l = list<Stitch>(ALL(stitches));
-    //int next_e = evaluate(next_l);
-    int next_a = get_dist(a, stitches);
-    int next_b = get_dist(b, stitches);
-    int next = next_a + next_b;
-    if(next >= now){
-        swap(stitches[a], stitches[b]);
+    int best_a = 1<<27;
+    int best_b = 1<<27;
+    int best_ar = 0;
+    int best_br = 0;
+    REP(ar, 2)REP(br, 2){
+        stitches[a].rev = ar;
+        stitches[b].rev = br;
+        int next_a = get_dist(a, stitches);
+        int next_b = get_dist(b, stitches);
+        if(best_a+best_b>next_a+next_b){
+            best_a = next_a;
+            best_b = next_b;
+            best_ar = ar;
+            best_br = br;
+        }
+    }
+    if(best_a+best_b >= now){
+        stitches[a] = as;
+        stitches[b] = bs;
     }else{
-        bit.add(a+1, next_a - now_a);
-        bit.add(b+1, next_b - now_b);
+        stitches[a].rev = best_ar;
+        stitches[b].rev = best_br;
+        bit.add(a+1, best_a - now_a);
+        bit.add(b+1, best_b - now_b);
         //DEBUG(<< now_e << "," << now << "->" << next_e << "," << next);
         //DEBUG(<< bit.sum(n));
     }
@@ -413,7 +429,7 @@ public:
             vector<Stitch> stitches = extract_stitches(pattern, c);
             ret.push_back(string(1, c));
             // search
-            double limit = start_time + each_time*(i+0.8);
+            double limit = start_time + each_time*(i+0.7);
             vector<Stitch> best_min_perm;
             if(S < 70){
                 best_min_perm = search_by_stitch_swap(stitches, limit);
