@@ -346,7 +346,7 @@ vector<Stitch> search_by_random_shuffle(vector<Stitch> stitches, double limit){
     list<Stitch> best_min_perm = search_min_permutation(stitches);
 
     while(get_time() < limit){
-        REP(_, 10){
+        REP(_, 5){
             random_shuffle(ALL(stitches));
             list<Stitch> min_perm = search_min_permutation(stitches);
             int score = evaluate(min_perm);
@@ -392,7 +392,7 @@ void optimize(vector<Stitch> &stitches, const double limit){
     BIT bit(n);
     REP(i, n)bit.add(i+1, get_dist(i, stitches));
     while(get_time() < limit){
-        REP(_, 1000){
+        REP(_, 100){
             int sum = bit.sum(n);
 
             int a = upper_bound(uniform()*sum, bit);
@@ -443,7 +443,7 @@ public:
         vector<string> ret;
 
         vector<char> alphabet = create_alphabet(pattern);
-        double each_time = 9.5 / alphabet.size();
+        double each_time = 9.4 / alphabet.size();
         int S = pattern.size();
         int C = alphabet.size();
         INFO(<< "S=" << S);
